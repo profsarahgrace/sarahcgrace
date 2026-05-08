@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sarah C. Grace, PhD — Researcher, Strategist & Storyteller</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Design tokens ── */
+    :root {
+      --cream:        #F5F0E8;
+      --warm-white:   #FAF7F2;
+      --parchment:    #EDE5D4;
+      --sage:         #8A9E8C;
+      --sage-light:   #C4D1C5;
+      --sage-muted:   #E8EEE8;
+      --walnut:       #5C4A32;
+      --walnut-light: #8B6F4E;
+      --gold:         #B8924A;
+      --gold-light:   #D4AD72;
+      --charcoal:     #2C2C2C;
+      --mid:          #6B6259;
+      --soft:         #9E948A;
+
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body:    'Jost', sans-serif;
+
+      --max-w: 1100px;
+      --nav-h: 72px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--warm-white);
+      color: var(--charcoal);
+      font-family: var(--font-body);
+      font-weight: 300;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(250, 247, 242, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(184, 146, 74, 0.15);
+      animation: fadeDown 0.8s ease both;
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: var(--walnut);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mid);
+      text-decoration: none;
+      transition: color 0.25s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover { color: var(--walnut); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      padding-top: var(--nav-h);
+      background: var(--warm-white);
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 72px;
+      max-width: 780px;
+      animation: fadeUp 1s 0.3s ease both;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 28px;
+    }
+
+    .hero-name {
+      font-family: var(--font-display);
+      font-size: clamp(3.5rem, 6vw, 5.5rem);
+      font-weight: 300;
+      line-height: 1.05;
+      color: var(--walnut);
+      margin-bottom: 8px;
+    }
+
+    .hero-name em {
+      font-style: italic;
+      color: var(--walnut-light);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.1rem, 2vw, 1.4rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--mid);
+      margin-bottom: 40px;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-belief {
+      font-size: 1.05rem;
+      color: var(--charcoal);
+      max-width: 440px;
+      line-height: 1.8;
+      margin-bottom: 52px;
+      border-left: 2px solid var(--sage-light);
+      padding-left: 24px;
+    }
+
+    .hero-belief strong {
+      font-weight: 500;
+      color: var(--walnut);
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 14px 32px;
+      background: var(--walnut);
+      color: var(--cream);
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: background 0.25s, transform 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-block;
+      padding: 14px 32px;
+      border: 1px solid var(--walnut-light);
+      color: var(--walnut);
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: border-color 0.25s, color 0.25s, transform 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      transform: translateY(-1px);
+    }
+
+    /* ── Section base ── */
+    section {
+      padding: 100px 0;
+    }
+
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--walnut);
+      margin-bottom: 48px;
+    }
+
+    .section-heading em { font-style: italic; }
+
+    /* ── About ── */
+    .about {
+      background: var(--cream);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+
+    .about-body p {
+      font-size: 1.05rem;
+      color: var(--charcoal);
+      line-height: 1.85;
+      margin-bottom: 24px;
+    }
+
+    .about-body p:last-child { margin-bottom: 0; }
+
+    .about-body strong {
+      font-weight: 500;
+      color: var(--walnut);
+    }
+
+    .about-sidebar {
+      padding-top: 8px;
+    }
+
+    .credential-block {
+      border-top: 1px solid var(--parchment);
+      padding: 28px 0;
+    }
+
+    .credential-block:first-child { border-top: none; padding-top: 0; }
+
+    .credential-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .credential-text {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: var(--walnut);
+      line-height: 1.45;
+    }
+
+    .credential-sub {
+      font-size: 0.85rem;
+      color: var(--mid);
+      margin-top: 4px;
+    }
+
+    /* ── Pillars ── */
+    .pillars {
+      background: var(--warm-white);
+    }
+
+    .pillars-intro {
+      max-width: 600px;
+      margin-bottom: 64px;
+    }
+
+    .pillars-intro p {
+      font-size: 1.05rem;
+      color: var(--mid);
+      line-height: 1.8;
+    }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--parchment);
+    }
+
+    .pillar {
+      background: var(--warm-white);
+      padding: 48px 40px;
+      transition: background 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pillar::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      background: var(--sage-light);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .pillar:hover { background: var(--sage-muted); }
+    .pillar:hover::before { transform: scaleX(1); }
+
+    .pillar-number {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      font-weight: 300;
+      color: var(--parchment);
+      line-height: 1;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .pillar:hover .pillar-number { color: var(--sage-light); }
+
+    .pillar-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--walnut);
+      margin-bottom: 16px;
+      line-height: 1.3;
+    }
+
+    .pillar-body {
+      font-size: 0.92rem;
+      color: var(--mid);
+      line-height: 1.75;
+    }
+
+    /* ── Work areas ── */
+    .work {
+      background: var(--walnut);
+      color: var(--cream);
+    }
+
+    .work .section-heading {
+      color: var(--cream);
+    }
+
+    .work .section-label {
+      color: var(--gold-light);
+    }
+
+    .work-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .work-card {
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 44px 36px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.3s, transform 0.3s;
+      display: block;
+      position: relative;
+    }
+
+    .work-card:hover {
+      border-color: var(--gold-light);
+      transform: translateY(-4px);
+    }
+
+    .work-card-icon {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-style: italic;
+      color: var(--gold-light);
+      margin-bottom: 24px;
+      opacity: 0.7;
+    }
+
+    .work-card-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--cream);
+      margin-bottom: 16px;
+    }
+
+    .work-card-body {
+      font-size: 0.9rem;
+      color: rgba(245,240,232,0.65);
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+
+    .work-card-link {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .work-card-link::after {
+      content: '→';
+      transition: transform 0.2s;
+    }
+
+    .work-card:hover .work-card-link::after {
+      transform: translateX(4px);
+    }
+
+    /* ── Belief banner ── */
+    .belief {
+      background: var(--sage);
+      padding: 80px 0;
+      text-align: center;
+    }
+
+    .belief-text {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--warm-white);
+      max-width: 780px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .belief-attr {
+      margin-top: 24px;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(250,247,242,0.6);
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--charcoal);
+      padding: 60px 0;
+    }
+
+    .footer-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 300;
+      color: var(--cream);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.45);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--gold-light); }
+
+    .footer-copy {
+      font-size: 0.78rem;
+      color: rgba(245,240,232,0.3);
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      nav {
+        padding: 0 20px;
+        height: auto;
+        min-height: var(--nav-h);
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+
+      .nav-logo { font-size: 1rem; }
+
+      .nav-links {
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+
+      .nav-links a { font-size: 0.7rem; }
+
+      .hero { min-height: auto; padding-top: var(--nav-h); }
+      .hero-left { padding: 52px 24px 48px; }
+
+      .about-grid { grid-template-columns: 1fr; gap: 48px; }
+      .pillars-grid { grid-template-columns: 1fr; }
+      .work-cards { grid-template-columns: 1fr; }
+
+      .footer-inner { flex-direction: column; gap: 24px; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+
+      .container { padding: 0 24px; }
+      section { padding: 72px 0; }
+    }
+
+    @media (max-width: 480px) {
+      .nav-links { gap: 12px; }
+      .nav-links a { font-size: 0.65rem; letter-spacing: 0.08em; }
+      .hero-left { padding: 40px 20px 36px; }
+      .hero-belief { font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#">Sarah C. Grace, PhD</a>
+    <ul class="nav-links">
+      <li><a href="research.html">Research</a></li>
+      <li><a href="teaching.html">Teaching</a></li>
+      <li><a href="advising.html">Advising</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <p class="hero-eyebrow">Researcher · Strategist · Storyteller</p>
+      <h1 class="hero-name">Sarah C.<br><em>Grace, PhD</em></h1>
+      <p class="hero-title">Marketing Professor & Consumer Culture Researcher</p>
+      <p class="hero-belief">
+        Creatively illuminating insights to provoke <strong>conversation &amp; change</strong> — 
+        because business, done with purpose, is one of the most powerful forces for good we have.
+      </p>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about-grid reveal">
+        <div class="about-body">
+          <p class="section-label">About</p>
+          <h2 class="section-heading">Researcher.<br><em>Practitioner. Storyteller.</em></h2>
+          <p>
+            I study consumer culture not from the outside, but from within it — as a former retail executive, 
+            a marketing professor, a community member, and a mother. That inside-outside perspective 
+            is what I bring to every classroom, every research question, and every conversation.
+          </p>
+          <p>
+            Before academia, I spent nine years inside three of America's most influential retail 
+            organizations — <strong>Walmart, Target, and Hallmark</strong> — leading brand equity research, 
+            competitive positioning, and consumer empathy initiatives. I left that world with deep conviction 
+            that the way we consume shapes who we become, and that business has a genuine role to play in bending 
+            that arc toward something better.
+          </p>
+          <p>
+            My research sits at the intersection of <strong>consumer well-being, temporal resistance, 
+            and sustainable consumption</strong> — examining how people push back against the relentless 
+            acceleration of modern life through their everyday choices. My teaching brings that research 
+            alive for students learning to lead with purpose in a complicated commercial world.
+          </p>
+          <p>
+            I believe the most powerful insights are the ones that connect disparate dots — 
+            showing how a global force manifests in a local moment, how a business decision 
+            ripples into a cultural one. That's the work I'm here to do.
+          </p>
+        </div>
+
+        <div class="about-sidebar">
+          <div class="credential-block">
+            <p class="credential-label">Academic Position</p>
+            <p class="credential-text">Assistant Teaching Professor of Marketing</p>
+            <p class="credential-sub">Walton College of Business, University of Arkansas</p>
+          </div>
+          <div class="credential-block">
+            <p class="credential-label">Education</p>
+            <p class="credential-text">PhD, Marketing</p>
+            <p class="credential-sub">University of Arkansas, 2021</p>
+          </div>
+          <div class="credential-block">
+            <p class="credential-label">Industry Background</p>
+            <p class="credential-text">Nine years in retail strategy & consumer insights</p>
+            <p class="credential-sub">Walmart · Target · Hallmark DaySpring</p>
+          </div>
+          <div class="credential-block">
+            <p class="credential-label">Research Published In</p>
+            <p class="credential-text" style="font-size:0.95rem; line-height:1.7;">
+              Journal of Macromarketing · Journal of Business Research · 
+              Marketing Education Review · AMS Review · 
+              Journal of the Association for Consumer Research
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PILLARS -->
+  <section class="pillars">
+    <div class="container">
+      <div class="pillars-intro reveal">
+        <p class="section-label">How I Work</p>
+        <h2 class="section-heading">The connective<br><em>tissue</em></h2>
+        <p>
+          Whether I'm designing a course, writing a paper, or advising a brand, 
+          three commitments run through everything I do.
+        </p>
+      </div>
+      <div class="pillars-grid reveal">
+        <div class="pillar">
+          <div class="pillar-number">01</div>
+          <h3 class="pillar-title">Research That<br>Matters</h3>
+          <p class="pillar-body">
+            I study the phenomena that shape how people consume and what that means for 
+            society — from temporal resistance to sustainable behavior, from cause marketing 
+            to cultural identity. The goal is always insight that travels beyond the journal page.
+          </p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-number">02</div>
+          <h3 class="pillar-title">Teaching That<br>Transforms</h3>
+          <p class="pillar-body">
+            My classroom is a space where industry realities meet ethical inquiry. 
+            Through case competitions, UpSkill Fridays, and COIL collaborations, 
+            students leave equipped not just to succeed in business, but to lead it 
+            toward something more purposeful.
+          </p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-number">03</div>
+          <h3 class="pillar-title">Stories That<br>Move People</h3>
+          <p class="pillar-body">
+            Data without narrative is just noise. I've spent my career translating complex 
+            consumer and cultural insights into stories that resonate — for executive audiences, 
+            students, readers, and now, a new generation of purpose-driven brands.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORK AREAS -->
+  <section class="work" id="research">
+    <div class="container">
+      <p class="section-label reveal">Explore My Work</p>
+      <h2 class="section-heading reveal">Where I spend<br><em>my energy</em></h2>
+      <div class="work-cards">
+        <a href="#teaching" class="work-card reveal">
+          <div class="work-card-icon">T.</div>
+          <h3 class="work-card-title">Teaching</h3>
+          <p class="work-card-body">
+            Purpose-Driven Retail Strategy and Introduction to Marketing at the 
+            Walton College of Business — courses built around real cases, 
+            ethical frameworks, and the belief that great strategy starts with empathy.
+          </p>
+          <span class="work-card-link">My Approach</span>
+        </a>
+        <a href="#research" class="work-card reveal">
+          <div class="work-card-icon">R.</div>
+          <h3 class="work-card-title">Research</h3>
+          <p class="work-card-body">
+            Peer-reviewed scholarship on consumer well-being, sustainable consumption, 
+            cause marketing, and the cultural forces shaping how we buy, discard, 
+            and assign meaning to things.
+          </p>
+          <span class="work-card-link">View Publications</span>
+        </a>
+        <a href="#projects" class="work-card reveal">
+          <div class="work-card-icon">P.</div>
+          <h3 class="work-card-title">Projects</h3>
+          <p class="work-card-body">
+            Writing, content, and ventures at the intersection of consumer culture 
+            and purpose-driven business — including a Substack on intentional consumption 
+            and TikTok explorations of the way we buy, discard, and assign meaning to things.
+          </p>
+          <span class="work-card-link">See Projects</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- BELIEF BANNER -->
+  <div class="belief">
+    <div class="container">
+      <p class="belief-text reveal">
+        The world needs thoughtful people who care enough to create a better one — 
+        people who can see how global issues carry local implications, 
+        and who tell stories that move others to act.
+      </p>
+      <p class="belief-attr reveal">Sarah C. Grace, PhD</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <p class="footer-logo">Sarah C. Grace, PhD</p>
+      <ul class="footer-links">
+        <li><a href="research.html">Research</a></li>
+        <li><a href="teaching.html">Teaching</a></li>
+        <li><a href="advising.html">Advising</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <p class="footer-copy">© 2026 Sarah C. Grace</p>
+    </div>
+  </footer>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll(
