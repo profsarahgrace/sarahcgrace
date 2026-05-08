@@ -102,7 +102,6 @@
 
     /* ── Hero ── */
     .hero {
-      min-height: 80vh;
       display: flex;
       align-items: center;
       padding-top: var(--nav-h);
@@ -116,6 +115,10 @@
       padding: 80px 72px;
       max-width: 780px;
       animation: fadeUp 1s 0.3s ease both;
+    }
+
+    @media (max-width: 900px) {
+      .hero-left { padding: 52px 24px 48px; }
     }
 
     .hero-eyebrow {
@@ -679,102 +682,6 @@
       </div>
     </div>
   </section>
-
-  <!-- PILLARS -->
-  <section class="pillars">
-    <div class="container">
-      <div class="pillars-intro reveal">
-        <p class="section-label">How I Work</p>
-        <h2 class="section-heading">The connective<br><em>tissue</em></h2>
-        <p>
-          Whether I'm designing a course, writing a paper, or advising a brand, 
-          three commitments run through everything I do.
-        </p>
-      </div>
-      <div class="pillars-grid reveal">
-        <div class="pillar">
-          <div class="pillar-number">01</div>
-          <h3 class="pillar-title">Research That<br>Matters</h3>
-          <p class="pillar-body">
-            I study the phenomena that shape how people consume and what that means for 
-            society — from temporal resistance to sustainable behavior, from cause marketing 
-            to cultural identity. The goal is always insight that travels beyond the journal page.
-          </p>
-        </div>
-        <div class="pillar">
-          <div class="pillar-number">02</div>
-          <h3 class="pillar-title">Teaching That<br>Transforms</h3>
-          <p class="pillar-body">
-            My classroom is a space where industry realities meet ethical inquiry. 
-            Through case competitions, UpSkill Fridays, and COIL collaborations, 
-            students leave equipped not just to succeed in business, but to lead it 
-            toward something more purposeful.
-          </p>
-        </div>
-        <div class="pillar">
-          <div class="pillar-number">03</div>
-          <h3 class="pillar-title">Stories That<br>Move People</h3>
-          <p class="pillar-body">
-            Data without narrative is just noise. I've spent my career translating complex 
-            consumer and cultural insights into stories that resonate — for executive audiences, 
-            students, readers, and now, a new generation of purpose-driven brands.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- WORK AREAS -->
-  <section class="work" id="research">
-    <div class="container">
-      <p class="section-label reveal">Explore My Work</p>
-      <h2 class="section-heading reveal">Where I spend<br><em>my energy</em></h2>
-      <div class="work-cards">
-        <a href="#teaching" class="work-card reveal">
-          <div class="work-card-icon">T.</div>
-          <h3 class="work-card-title">Teaching</h3>
-          <p class="work-card-body">
-            Purpose-Driven Retail Strategy and Introduction to Marketing at the 
-            Walton College of Business — courses built around real cases, 
-            ethical frameworks, and the belief that great strategy starts with empathy.
-          </p>
-          <span class="work-card-link">My Approach</span>
-        </a>
-        <a href="#research" class="work-card reveal">
-          <div class="work-card-icon">R.</div>
-          <h3 class="work-card-title">Research</h3>
-          <p class="work-card-body">
-            Peer-reviewed scholarship on consumer well-being, sustainable consumption, 
-            cause marketing, and the cultural forces shaping how we buy, discard, 
-            and assign meaning to things.
-          </p>
-          <span class="work-card-link">View Publications</span>
-        </a>
-        <a href="#projects" class="work-card reveal">
-          <div class="work-card-icon">P.</div>
-          <h3 class="work-card-title">Projects</h3>
-          <p class="work-card-body">
-            Writing, content, and ventures at the intersection of consumer culture 
-            and purpose-driven business — including a Substack on intentional consumption 
-            and TikTok explorations of the way we buy, discard, and assign meaning to things.
-          </p>
-          <span class="work-card-link">See Projects</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- BELIEF BANNER -->
-  <div class="belief">
-    <div class="container">
-      <p class="belief-text reveal">
-        The world needs thoughtful people who care enough to create a better one — 
-        people who can see how global issues carry local implications, 
-        and who tell stories that move others to act.
-      </p>
-      <p class="belief-attr reveal">Sarah C. Grace, PhD</p>
-    </div>
-  </div>
 
   <!-- FOOTER -->
   <footer>
