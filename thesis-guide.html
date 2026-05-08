@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Honors Thesis Planning Guide — Walton College of Business</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cream:#faf8f3;--cream-mid:#f0ece0;--cream-dark:#e4ddd0;
+  --walnut:#2e2118;--walnut-mid:#5c3d28;--walnut-light:#9b6b3e;
+  --sage:#6b7d63;--sage-light:#a8baa0;--sage-pale:#e6ede3;
+  --gold:#a8882a;--gold-light:#c9ab5a;--gold-pale:#f7f0d8;--gold-border:#dfc87a;
+  --c1:#534AB7;--c1p:#EEEDFE;--c1d:#3C3489;--c1m:#7F77DD;
+  --c2:#0F6E56;--c2p:#E1F5EE;--c2d:#085041;--c2m:#1D9E75;
+  --c3:#185FA5;--c3p:#E6F1FB;--c3d:#0C447C;--c3m:#378ADD;
+  --c4:#854F0B;--c4p:#FAEEDA;--c4d:#633806;--c4m:#BA7517;
+  --c5:#993C1D;--c5p:#FAECE7;--c5d:#712B13;--c5m:#D85A30;
+  --c6:#3B6D11;--c6p:#EAF3DE;--c6d:#27500A;--c6m:#639922;
+  --ci:#1a5c8a;--cip:#e3f0f9;--cid:#0d3a5c;--cim:#2980b9;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--cream);color:var(--walnut);font-family:'Jost',sans-serif;font-weight:300;line-height:1.75;min-height:100vh;}
+
+/* Header */
+header{padding:64px 24px 48px;text-align:center;position:relative;border-bottom:1px solid var(--cream-dark);overflow:hidden;}
+header::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(107,125,99,0.07) 39px,rgba(107,125,99,0.07) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(107,125,99,0.07) 39px,rgba(107,125,99,0.07) 40px);pointer-events:none;}
+.eyebrow{font-size:11px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--sage);margin-bottom:18px;position:relative;}
+h1{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,5.5vw,58px);font-weight:500;line-height:1.05;color:var(--walnut);margin-bottom:20px;position:relative;}
+h1 em{font-style:italic;color:var(--walnut-light);}
+.header-desc{font-size:15px;font-weight:300;color:var(--walnut-mid);max-width:520px;margin:0 auto 0;position:relative;}
+
+/* Onboarding */
+#onboarding{max-width:700px;margin:0 auto;padding:48px 24px 64px;}
+.onboard-q{font-family:'Cormorant Garamond',serif;font-size:25px;font-weight:500;color:var(--walnut);margin-bottom:6px;text-align:center;}
+.onboard-sub{font-size:14px;color:var(--walnut-mid);text-align:center;margin-bottom:32px;line-height:1.6;}
+.onboard-options{display:flex;flex-direction:column;gap:11px;}
+.onboard-btn{display:flex;align-items:flex-start;gap:16px;background:white;border:1.5px solid var(--cream-dark);border-radius:12px;padding:18px 22px;cursor:pointer;text-align:left;transition:all 0.15s ease;width:100%;}
+.onboard-btn:hover{border-color:var(--sage-light);box-shadow:0 2px 12px rgba(46,33,24,0.06);}
+.onboard-btn.selected{border-color:var(--sage);background:var(--sage-pale);}
+.ob-num{font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:var(--sage-light);flex-shrink:0;line-height:1.3;min-width:20px;}
+.ob-text strong{font-weight:500;font-size:15px;color:var(--walnut);display:block;margin-bottom:3px;}
+.ob-text span{font-size:13px;color:var(--walnut-mid);line-height:1.5;}
+.track-badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:5px;}
+.badge-research{background:var(--c1p);color:var(--c1d);}
+.badge-internship{background:var(--cip);color:var(--cid);}
+.badge-project{background:var(--c4p);color:var(--c4d);}
+.onboard-cta{margin-top:28px;text-align:center;}
+.btn-primary{background:var(--walnut);color:var(--cream);border:none;border-radius:8px;padding:14px 36px;font-family:'Jost',sans-serif;font-size:14px;font-weight:400;letter-spacing:0.04em;cursor:pointer;transition:opacity 0.15s ease;}
+.btn-primary:hover{opacity:0.85;}
+.btn-primary:disabled{opacity:0.3;cursor:default;}
+
+/* Step 2 — where are you */
+#onboard-step2{display:none;}
+#onboard-redirect{display:none;}
+.back-btn{background:none;border:none;font-size:13px;color:var(--sage);cursor:pointer;text-decoration:underline;margin-bottom:20px;display:block;}
+
+/* Progress */
+#main-tool{display:none;}
+.progress-wrap{background:white;border-bottom:1px solid var(--cream-dark);padding:14px 40px;position:sticky;top:0;z-index:100;}
+.progress-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:16px;}
+.progress-label{font-size:12px;color:var(--sage);font-weight:400;white-space:nowrap;}
+.start-over-btn{background:none;border:1px solid var(--cream-dark);border-radius:6px;font-size:12px;color:var(--sage);cursor:pointer;padding:5px 12px;font-family:'Jost',sans-serif;white-space:nowrap;transition:all 0.15s ease;flex-shrink:0;}
+.start-over-btn:hover{border-color:var(--sage-light);color:var(--walnut-mid);background:var(--sage-pale);}
+.track-label-pill{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.progress-track{flex:1;height:4px;background:var(--cream-mid);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--sage);border-radius:2px;transition:width 0.5s ease;width:0%;}
+.progress-count{font-size:12px;color:var(--sage);white-space:nowrap;}
+
+/* Location banner */
+.location-banner{max-width:900px;margin:28px auto 0;padding:0 24px;}
+.location-card{background:white;border:1px solid var(--cream-dark);border-radius:12px;padding:18px 26px;display:flex;align-items:flex-start;gap:14px;}
+.location-dot{width:9px;height:9px;border-radius:50%;background:var(--sage);flex-shrink:0;margin-top:6px;}
+.location-text strong{font-weight:500;font-size:15px;color:var(--walnut);display:block;margin-bottom:3px;}
+.location-text p{font-size:13px;color:var(--walnut-mid);line-height:1.6;}
+.location-text p em{font-style:italic;color:var(--walnut-light);}
+
+/* Main */
+main{max-width:900px;margin:0 auto;padding:28px 24px 80px;}
+
+/* Iteration note */
+.iteration-note{background:var(--gold-pale);border:1px solid var(--gold-border);border-radius:10px;padding:16px 22px;margin-bottom:24px;display:flex;gap:12px;align-items:flex-start;}
+.iteration-icon{font-size:14px;flex-shrink:0;margin-top:2px;color:var(--gold);font-weight:500;}
+.iteration-text{font-size:13px;color:var(--walnut-mid);line-height:1.6;}
+.iteration-text strong{font-weight:500;color:var(--gold);}
+
+/* Stage cards */
+.stage-card{background:white;border:1px solid var(--cream-dark);border-radius:16px;margin-bottom:14px;overflow:hidden;transition:box-shadow 0.2s ease;}
+.stage-card:hover{box-shadow:0 4px 20px rgba(46,33,24,0.06);}
+.stage-card.complete{border-color:var(--sage-light);}
+.stage-card.focus-stage{border-width:2px;}
+.stage-header{display:flex;align-items:stretch;cursor:pointer;user-select:none;}
+.stage-number-block{width:58px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Cormorant Garamond',serif;font-size:24px;font-style:italic;font-weight:500;border-right:1px solid var(--cream-dark);}
+.stage-header-content{flex:1;padding:16px 20px;}
+.stage-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;line-height:1.2;margin-bottom:3px;}
+.stage-question-preview{font-size:12px;color:var(--walnut-mid);font-weight:300;}
+.stage-toggle{padding:0 20px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:6px;}
+.toggle-icon{width:24px;height:24px;border-radius:50%;border:1px solid var(--cream-dark);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--sage);transition:transform 0.3s ease,background 0.2s ease;flex-shrink:0;}
+.stage-card.open .toggle-icon{transform:rotate(180deg);background:var(--sage-pale);}
+.stage-badge{font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.focus-pill{font-size:10px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:var(--sage-pale);color:var(--sage);white-space:nowrap;}
+
+/* Research track colors */
+.stage-1 .stage-number-block{color:var(--c1);background:var(--c1p);border-color:rgba(83,74,183,0.15);}
+.stage-1 .stage-name{color:var(--c1d);}
+.stage-1 .stage-badge{background:var(--c1p);color:var(--c1);}
+.stage-1.open .stage-header{background:var(--c1p);}
+.stage-1.focus-stage{border-color:var(--c1);}
+.stage-2 .stage-number-block{color:var(--c2);background:var(--c2p);border-color:rgba(15,110,86,0.15);}
+.stage-2 .stage-name{color:var(--c2d);}
+.stage-2 .stage-badge{background:var(--c2p);color:var(--c2);}
+.stage-2.open .stage-header{background:var(--c2p);}
+.stage-2.focus-stage{border-color:var(--c2);}
+.stage-3 .stage-number-block{color:var(--c3);background:var(--c3p);border-color:rgba(24,95,165,0.15);}
+.stage-3 .stage-name{color:var(--c3d);}
+.stage-3 .stage-badge{background:var(--c3p);color:var(--c3);}
+.stage-3.open .stage-header{background:var(--c3p);}
+.stage-3.focus-stage{border-color:var(--c3);}
+.stage-4 .stage-number-block{color:var(--c4);background:var(--c4p);border-color:rgba(133,79,11,0.15);}
+.stage-4 .stage-name{color:var(--c4d);}
+.stage-4 .stage-badge{background:var(--c4p);color:var(--c4);}
+.stage-4.open .stage-header{background:var(--c4p);}
+.stage-4.focus-stage{border-color:var(--c4);}
+.stage-5 .stage-number-block{color:var(--c5);background:var(--c5p);border-color:rgba(153,60,29,0.15);}
+.stage-5 .stage-name{color:var(--c5d);}
+.stage-5 .stage-badge{background:var(--c5p);color:var(--c5);}
+.stage-5.open .stage-header{background:var(--c5p);}
+.stage-5.focus-stage{border-color:var(--c5);}
+.stage-6 .stage-number-block{color:var(--c6);background:var(--c6p);border-color:rgba(59,109,17,0.15);}
+.stage-6 .stage-name{color:var(--c6d);}
+.stage-6 .stage-badge{background:var(--c6p);color:var(--c6);}
+.stage-6.open .stage-header{background:var(--c6p);}
+.stage-6.focus-stage{border-color:var(--c6);}
+
+/* Internship/Project track — teal/amber palette */
+.istage-1 .stage-number-block{color:var(--cim);background:var(--cip);border-color:rgba(26,92,138,0.15);}
+.istage-1 .stage-name{color:var(--cid);}
+.istage-1 .stage-badge{background:var(--cip);color:var(--ci);}
+.istage-1.open .stage-header{background:var(--cip);}
+.istage-1.focus-stage{border-color:var(--ci);}
+.istage-2 .stage-number-block{color:var(--c2);background:var(--c2p);border-color:rgba(15,110,86,0.15);}
+.istage-2 .stage-name{color:var(--c2d);}
+.istage-2 .stage-badge{background:var(--c2p);color:var(--c2);}
+.istage-2.open .stage-header{background:var(--c2p);}
+.istage-2.focus-stage{border-color:var(--c2);}
+.istage-3 .stage-number-block{color:var(--c4);background:var(--c4p);border-color:rgba(133,79,11,0.15);}
+.istage-3 .stage-name{color:var(--c4d);}
+.istage-3 .stage-badge{background:var(--c4p);color:var(--c4);}
+.istage-3.open .stage-header{background:var(--c4p);}
+.istage-3.focus-stage{border-color:var(--c4);}
+.istage-4 .stage-number-block{color:var(--c5);background:var(--c5p);border-color:rgba(153,60,29,0.15);}
+.istage-4 .stage-name{color:var(--c5d);}
+.istage-4 .stage-badge{background:var(--c5p);color:var(--c5);}
+.istage-4.open .stage-header{background:var(--c5p);}
+.istage-4.focus-stage{border-color:var(--c5);}
+.istage-5 .stage-number-block{color:var(--c6);background:var(--c6p);border-color:rgba(59,109,17,0.15);}
+.istage-5 .stage-name{color:var(--c6d);}
+.istage-5 .stage-badge{background:var(--c6p);color:var(--c6);}
+.istage-5.open .stage-header{background:var(--c6p);}
+.istage-5.focus-stage{border-color:var(--c6);}
+
+/* Stage body */
+.stage-body{max-height:0;overflow:hidden;transition:max-height 0.5s cubic-bezier(0.4,0,0.2,1);}
+.stage-card.open .stage-body{max-height:2400px;}
+.stage-body-inner{padding:26px 30px 30px;border-top:1px solid var(--cream-dark);}
+.body-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px 34px;}
+@media(max-width:640px){.body-grid{grid-template-columns:1fr;}.full-col{grid-column:1;}}
+.full-col{grid-column:1/-1;}
+.section-label{font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--sage);margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid var(--cream-dark);}
+
+/* Not ready note */
+.not-ready-note{background:var(--cream-mid);border-radius:10px;padding:18px 22px;margin-bottom:22px;display:flex;gap:12px;align-items:flex-start;}
+.nrn-icon{font-size:16px;flex-shrink:0;}
+.nrn-text strong{font-weight:500;font-size:14px;color:var(--walnut);display:block;margin-bottom:3px;}
+.nrn-text p{font-size:13px;color:var(--walnut-mid);line-height:1.6;}
+
+/* Checklist */
+.checklist{display:flex;flex-direction:column;gap:10px;}
+.check-item{display:flex;align-items:flex-start;gap:12px;}
+.check-item input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:18px;height:18px;border:1.5px solid var(--cream-dark);border-radius:4px;flex-shrink:0;margin-top:3px;cursor:pointer;transition:all 0.15s ease;position:relative;background:white;}
+.check-item input:checked{background:var(--sage);border-color:var(--sage);}
+.check-item input:checked::after{content:'';position:absolute;top:2px;left:5px;width:5px;height:9px;border:2px solid white;border-top:none;border-left:none;transform:rotate(45deg);}
+.check-item label{font-size:14px;color:var(--walnut-mid);line-height:1.55;cursor:pointer;transition:color 0.15s ease;}
+.check-item input:checked+label{color:var(--sage);text-decoration:line-through;text-decoration-color:var(--sage-light);}
+
+/* Info lists */
+.info-list{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.info-list li{font-size:14px;color:var(--walnut-mid);padding-left:18px;position:relative;line-height:1.55;}
+.info-list li::before{content:'→';position:absolute;left:0;color:var(--sage-light);font-size:12px;top:2px;}
+.info-list li strong{font-weight:500;color:var(--walnut);}
+.info-list li em{font-style:italic;}
+
+/* Tool chips */
+.tool-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+.tool-chip{background:var(--sage-pale);border:1px solid var(--sage-light);border-radius:20px;padding:4px 13px;font-size:12px;color:var(--sage);}
+
+/* Pitfall */
+.pitfall-box{background:var(--gold-pale);border:1px solid var(--gold-border);border-radius:10px;padding:17px 20px;display:flex;gap:12px;}
+.pitfall-icon{width:24px;height:24px;background:var(--gold-pale);border:1px solid var(--gold-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px;color:var(--gold);font-weight:600;}
+.pitfall-title{font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--gold);margin-bottom:5px;}
+.pitfall-text{font-size:13px;color:var(--walnut-mid);line-height:1.6;}
+.pitfall-text strong{font-weight:500;color:var(--walnut);}
+
+/* Exit box */
+.exit-box{background:var(--sage-pale);border:1px solid var(--sage-light);border-radius:10px;padding:17px 20px;}
+.exit-title{font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--sage);margin-bottom:9px;}
+.exit-list{list-style:none;display:flex;flex-direction:column;gap:7px;}
+.exit-list li{font-size:13px;color:var(--sage);padding-left:16px;position:relative;line-height:1.5;}
+.exit-list li::before{content:'✓';position:absolute;left:0;font-size:11px;top:1px;}
+
+/* Reflection */
+.reflection-box{border-top:1px solid var(--cream-dark);padding-top:20px;}
+.reflection-label{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--walnut-light);margin-bottom:8px;}
+.reflection-hint{font-size:12px;color:var(--sage-light);margin-bottom:9px;font-style:italic;}
+textarea.reflection-input{width:100%;min-height:84px;border:1px solid var(--cream-dark);border-radius:8px;padding:11px 14px;font-family:'Jost',sans-serif;font-size:14px;font-weight:300;color:var(--walnut);background:var(--cream);resize:vertical;transition:border-color 0.15s ease;line-height:1.6;}
+textarea.reflection-input::placeholder{color:var(--sage-light);}
+textarea.reflection-input:focus{outline:none;border-color:var(--sage);}
+
+/* IRB callout */
+.irb-box{background:#FAECE7;border:1.5px solid #D85A30;border-radius:10px;padding:18px 22px;}
+.irb-title{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#993C1D;margin-bottom:9px;}
+.irb-text{font-size:13px;color:var(--walnut-mid);line-height:1.65;margin-bottom:9px;}
+.irb-links{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:12px;}
+.irb-btn-dark{display:inline-block;background:var(--walnut);color:var(--cream);border-radius:6px;padding:8px 16px;font-family:'Jost',sans-serif;font-size:12px;font-weight:400;text-decoration:none;letter-spacing:0.03em;}
+.irb-btn-outline{display:inline-block;background:transparent;color:#993C1D;border:1px solid #993C1D;border-radius:6px;padding:8px 16px;font-family:'Jost',sans-serif;font-size:12px;font-weight:400;text-decoration:none;letter-spacing:0.03em;}
+
+/* Connector */
+.stage-connector{display:flex;align-items:center;justify-content:center;height:14px;position:relative;z-index:1;}
+.connector-line{width:1.5px;height:14px;background:var(--cream-dark);}
+
+/* Output stem */
+.output-stem{display:flex;flex-direction:column;align-items:center;margin-top:24px;}
+.stem-line-long{width:1.5px;height:36px;}
+.stem-line-research{background:linear-gradient(to bottom,var(--cream-dark),var(--c6m));}
+.stem-line-internship{background:linear-gradient(to bottom,var(--cream-dark),var(--cim));}
+.stem-line-project{background:linear-gradient(to bottom,var(--cream-dark),var(--c4m));}
+.output-card{border-radius:40px;padding:13px 32px;text-align:center;}
+.output-card-research{background:var(--c6p);border:1.5px solid var(--c6m);}
+.output-card-research .output-card-title{color:var(--c6d);}
+.output-card-internship{background:var(--cip);border:1.5px solid var(--cim);}
+.output-card-internship .output-card-title{color:var(--cid);}
+.output-card-project{background:var(--c4p);border:1.5px solid var(--c4m);}
+.output-card-project .output-card-title{color:var(--c4d);}
+.output-card-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:500;margin-bottom:2px;}
+.output-card-sub{font-size:12px;color:var(--walnut-mid);}
+
+/* Summary */
+.summary-section{margin-top:44px;padding:34px 38px;background:var(--walnut);border-radius:20px;color:var(--cream);}
+.summary-section h2{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;font-style:italic;color:var(--cream);margin-bottom:5px;}
+.summary-sub{font-size:14px;color:var(--sage-light);margin-bottom:22px;}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;}
+@media(max-width:560px){.summary-grid{grid-template-columns:1fr;}}
+.summary-stat{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;text-align:center;}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:500;color:var(--gold-light);line-height:1;margin-bottom:3px;}
+.stat-label{font-size:11px;color:var(--sage-light);}
+.next-steps-title{font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--sage-light);margin-bottom:9px;}
+.next-steps-list{display:flex;flex-direction:column;gap:8px;}
+.next-step-item{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--cream-mid);line-height:1.5;}
+.next-step-bullet{width:5px;height:5px;border-radius:50%;background:var(--gold-light);flex-shrink:0;margin-top:7px;}
+.advisor-note{margin-top:20px;padding:14px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;font-size:13px;color:var(--sage-light);line-height:1.6;}
+.advisor-note a{color:var(--gold-light);text-decoration:none;}
+.print-btn-wrap{text-align:center;margin-top:18px;}
+.print-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:11px 26px;font-family:'Jost',sans-serif;font-size:13px;color:var(--sage-light);cursor:pointer;letter-spacing:0.04em;transition:all 0.15s ease;}
+.print-btn:hover{background:rgba(255,255,255,0.13);color:var(--cream);}
+
+/* Footer */
+footer{text-align:center;padding:32px 24px;font-size:12px;color:var(--sage);border-top:1px solid var(--cream-dark);margin-top:44px;}
+footer a{color:var(--walnut-light);text-decoration:none;}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.stage-card{animation:fadeUp 0.4s ease both;}
+.stage-card:nth-child(1){animation-delay:0.05s;}
+.stage-card:nth-child(3){animation-delay:0.1s;}
+.stage-card:nth-child(5){animation-delay:0.15s;}
+.stage-card:nth-child(7){animation-delay:0.2s;}
+.stage-card:nth-child(9){animation-delay:0.25s;}
+.stage-card:nth-child(11){animation-delay:0.3s;}
+
+/* Print */
+@media print{
+  header::before,#onboarding,.progress-wrap,.toggle-icon,.print-btn-wrap,.funnel-intro-wrap{display:none!important;}
+  .stage-body{max-height:none!important;overflow:visible!important;}
+  .stage-card{box-shadow:none!important;break-inside:avoid;margin-bottom:10px;border:1px solid #ccc;border-radius:8px;}
+  .stage-header{background:none!important;}
+  .stage-number-block{width:40px;font-size:18px;border-right:1px solid #eee;}
+  .stage-name{font-size:16px;}
+  .stage-badge,.focus-pill,.not-ready-note,.iteration-note,.irb-box,.pitfall-box,.exit-box,.location-banner{display:none!important;}
+  .body-grid{display:block;}
+  .full-col{display:block!important;}
+  .reflection-box{display:block!important;padding-top:12px;}
+  .reflection-label{font-size:13px;}
+  .reflection-hint{display:none;}
+  textarea.reflection-input{border:1px solid #bbb;background:#fff;min-height:56px;font-size:12px;width:100%;resize:none;}
+  .section-label{font-size:9px;margin-bottom:7px;padding-bottom:5px;}
+  .info-list,.tool-chips,.ob-text,.onboard-options{display:none!important;}
+  .summary-section{background:#2e2118!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .summary-grid,.next-steps-list,.advisor-note{display:none!important;}
+  summary-section h2,.summary-sub{display:block;}
+  header{padding:18px 24px 14px;border-bottom:1px solid #ddd;text-align:left;}
+  h1{font-size:20px;margin-bottom:3px;}
+  h1 br{display:none;}
+  .header-desc{display:none;}
+  .eyebrow{margin-bottom:5px;}
+  main{padding:10px 16px;}
+  body::after{content:'Honors Thesis with Professor Sarah Grace · Walton College of Business';display:block;text-align:center;font-size:9px;color:#999;padding:14px 0 0;border-top:1px solid #eee;margin-top:14px;font-family:'Jost',sans-serif;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Honors Thesis with Professor Sarah Grace · Walton College of Business</p>
+  <h1>Your Honors Thesis<br><em>Planning Guide</em></h1>
+  <p class="header-desc">A guide for students planning, developing, and writing an honors thesis. Select your track to get started — you can return to this anytime as your project evolves.</p>
+</header>
+
+<div id="onboarding">
+
+  <!-- Step 1: Track selector -->
+  <div id="onboard-step1">
+    <p class="onboard-q">Which thesis track are you on?</p>
+    <p class="onboard-sub">Select the option that best describes your thesis project.</p>
+    <div class="onboard-options">
+      <button class="onboard-btn" id="btn-research">
+        <span class="ob-num">A</span>
+        <div class="ob-text">
+          <span class="track-badge badge-research">Research option</span>
+          <strong>Traditional thesis — original data collection and analysis.</strong>
+          <span>You'll design a study, collect data (surveys, interviews, experiments, etc.), and analyze it to answer a research question. Likely requires IRB approval.</span>
+        </div>
+      </button>
+      <button class="onboard-btn" id="btn-internship">
+        <span class="ob-num">B</span>
+        <div class="ob-text">
+          <span class="track-badge badge-internship">Internship / Experiential option</span>
+          <strong>Practice-based — an internship, service-learning, or significant professional experience.</strong>
+          <span>You completed or are completing a substantive experience and will connect what you learned to marketing concepts through observation, reflection, and application.</span>
+        </div>
+      </button>
+      <button class="onboard-btn" id="btn-project">
+        <span class="ob-num">C</span>
+        <div class="ob-text">
+          <span class="track-badge badge-project">Project option</span>
+          <strong>Practice-based — a business plan, creative brief, marketing strategy, or analytical project.</strong>
+          <span>You're producing a real strategic or creative deliverable — a campaign, market analysis, brand strategy, or expansion plan — grounded in research and analysis.</span>
+        </div>
+      </button>
+    </div>
+    <div class="onboard-cta">
+      <button class="btn-primary" id="trackNextBtn" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Where are you (research) -->
+  <div id="onboard-step2-research" style="display:none">
+    <button class="back-btn" id="back-from-research">← Change my track selection</button>
+    <p class="onboard-q">Where are you in the research process?</p>
+    <p class="onboard-sub">Be honest — there's no wrong answer, and the tool works better when it knows where to focus.</p>
+    <div class="onboard-options" id="research-progress-options">
+      <button class="onboard-btn" id="rp-0"><span class="ob-num">A</span><div class="ob-text"><strong>I have a general interest area, but I haven't landed on a clear phenomenon yet.</strong><span>I know the broad topic excites me, but I couldn't describe exactly what I want to study in one or two sentences.</span></div></button>
+      <button class="onboard-btn" id="rp-1"><span class="ob-num">B</span><div class="ob-text"><strong>I have a phenomenon in mind and I'm starting to read the literature.</strong><span>I can describe what I want to study, and I'm beginning to search for academic papers — but I haven't found a clear gap yet.</span></div></button>
+      <button class="onboard-btn" id="rp-2"><span class="ob-num">C</span><div class="ob-text"><strong>I have a solid lit review and I'm working toward a research question.</strong><span>I've read widely enough to understand what's known and what's missing. I'm trying to sharpen my question.</span></div></button>
+      <button class="onboard-btn" id="rp-3"><span class="ob-num">D</span><div class="ob-text"><strong>I have a research question and I'm figuring out theory and method.</strong><span>The question is mostly settled. Now I need to decide on the theoretical lens and how I'll actually collect and analyze data.</span></div></button>
+      <button class="onboard-btn" id="rp-4"><span class="ob-num">E</span><div class="ob-text"><strong>I'm in the middle of data collection or analysis.</strong><span>Method is decided and I'm in the work. I want to check my understanding of where I am and what comes next.</span></div></button>
+    </div>
+    <div class="onboard-cta"><button class="btn-primary" id="startResearchBtn" disabled>Show me where to focus →</button></div>
+  </div>
+
+  <!-- Step 2: Where are you (internship) -->
+  <div id="onboard-step2-internship" style="display:none">
+    <button class="back-btn" id="back-from-internship">← Change my track selection</button>
+    <p class="onboard-q">Where are you in your internship thesis?</p>
+    <p class="onboard-sub">Select the description that best fits where you are right now.</p>
+    <div class="onboard-options" id="internship-progress-options">
+      <button class="onboard-btn" id="ip-0"><span class="ob-num">A</span><div class="ob-text"><strong>I haven't started yet — I'm preparing for or just beginning my internship.</strong><span>I want to understand how to approach the experience so I can get the most out of it for my thesis.</span></div></button>
+      <button class="onboard-btn" id="ip-1"><span class="ob-num">B</span><div class="ob-text"><strong>I'm mid-internship — I'm in the experience but haven't started writing yet.</strong><span>I'm learning and observing. I want to make sure I'm capturing the right things to build a strong thesis.</span></div></button>
+      <button class="onboard-btn" id="ip-2"><span class="ob-num">C</span><div class="ob-text"><strong>My internship is complete and I'm ready to write.</strong><span>The experience is done. Now I need to shape what I learned into a thesis.</span></div></button>
+      <button class="onboard-btn" id="ip-3"><span class="ob-num">D</span><div class="ob-text"><strong>I'm in the middle of writing my thesis.</strong><span>I have a draft or sections underway and want to check that I'm on the right track.</span></div></button>
+    </div>
+    <div class="onboard-cta"><button class="btn-primary" id="startInternshipBtn" disabled>Show me where to focus →</button></div>
+  </div>
+
+  <!-- Step 2: Where are you (project) -->
+  <div id="onboard-step2-project" style="display:none">
+    <button class="back-btn" id="back-from-project">← Change my track selection</button>
+    <p class="onboard-q">Where are you in your project thesis?</p>
+    <p class="onboard-sub">Select the description that best fits where you are right now.</p>
+    <div class="onboard-options" id="project-progress-options">
+      <button class="onboard-btn" id="pp-0"><span class="ob-num">A</span><div class="ob-text"><strong>I have a general topic or idea but haven't scoped the project yet.</strong><span>I know what I'm interested in, but I haven't defined what my actual deliverable will be or what problem I'm solving.</span></div></button>
+      <button class="onboard-btn" id="pp-1"><span class="ob-num">B</span><div class="ob-text"><strong>I've scoped my project and I'm doing the research and analysis needed to build it.</strong><span>I know what I'm making and who it's for. I'm gathering the evidence, data, and frameworks to support it.</span></div></button>
+      <button class="onboard-btn" id="pp-2"><span class="ob-num">C</span><div class="ob-text"><strong>I'm building or writing my deliverable.</strong><span>The research and planning is mostly done. I'm now constructing the actual thesis document and deliverable.</span></div></button>
+      <button class="onboard-btn" id="pp-3"><span class="ob-num">D</span><div class="ob-text"><strong>My deliverable is mostly done — I'm refining and wrapping up.</strong><span>The main work is complete. I want to make sure I've connected the dots academically before I submit.</span></div></button>
+    </div>
+    <div class="onboard-cta"><button class="btn-primary" id="startProjectBtn" disabled>Show me where to focus →</button></div>
+  </div>
+
+</div><!-- /onboarding -->
+
+<!-- ══ MAIN TOOL ══ -->
+<div id="main-tool">
+  <div class="progress-wrap">
+    <div class="progress-inner">
+      <button class="start-over-btn" id="startOverBtn">← Start over</button>
+      <span class="track-label-pill" id="trackLabelPill"></span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-count" id="progressCount">0 completed</span>
+    </div>
+  </div>
+  <div class="location-banner">
+    <div class="location-card" id="locationCard">
+      <div class="location-dot"></div>
+      <div class="location-text"><strong id="locationTitle">You're here</strong><p id="locationBody"></p></div>
+    </div>
+  </div>
+  <main id="stageContainer"></main>
+</div>
+
+<footer>
+  <p>Sam M. Walton College of Business · University of Arkansas · Honors Thesis with Professor Sarah Grace</p>
+</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────
+
+const RESEARCH_STAGES = [
+  {
+    cls:'stage-1', name:'Topic & Phenomenon', preview:'What real-world thing do you want to understand?',
+    checks:[
+      'I can describe in 1–2 sentences the specific real-world thing I want to understand — not just a broad topic area.',
+      'My phenomenon is observable — I can point to concrete, specific examples of it happening in the world.',
+      'I can explain why this phenomenon matters enough to spend a year studying it.'
+    ],
+    cols:[
+      {label:'What this stage produces', items:['A plain-language description of the phenomenon you are studying','A clear sense of why it matters — your motivation','Enough clarity to start a productive literature search']},
+      {label:'Questions to push yourself', items:['Is this a <strong>phenomenon</strong> or just a topic? (See pitfall below.)','Can you describe it to a non-expert in two sentences?','Have you <em>observed</em> this in the real world, or only read about it?','Do you have a sense of the <strong>context</strong> — the specific industry, platform, or population — you would study this in? It does not need to be locked in yet, but it will focus your reading.']}
+    ],
+    pitfall:{title:'Starting too broad',text:'<strong>"Consumer behavior"</strong> is a field. <strong>"Sustainable consumption"</strong> is a topic. <strong>"Why consumers feel guilty buying fast fashion even when it conflicts with their stated values"</strong> is a phenomenon — specific, observable, and puzzling. Push until you have something at that level. If you can\'t describe it in two sentences without using "the relationship between" or "the impact of," keep sharpening.'},
+    exit:['You can describe your phenomenon in two specific, jargon-free sentences','You can name 2–3 real-world examples of it','You can explain why it matters without saying "I find it interesting"'],
+    reflection:{label:'In your own words: what is the phenomenon you want to study?',hint:'Aim for two sentences. Avoid jargon. Bring this to your advising meeting.',placeholder:'Try: "I want to understand why / how / when..." — be as specific as you can.'},
+    irb:false
+  },
+  {
+    cls:'stage-2', name:'Literature Review', preview:'What do we already know? What gaps remain?',
+    checks:[
+      'I have read at least 8–10 relevant academic papers — at minimum the introduction and conclusion of each.',
+      'I can identify 2–3 key themes or debates in what I\'ve read — organized by idea, not by paper — and I have given each theme a name.',
+      'I can point to at least one specific gap — something the literature hasn\'t addressed that my study could speak to.'
+    ],
+    cols:[
+      {label:'Where and how to search', chips:['Google Scholar','UA Library (full text)','NotebookLM','Zotero'], items:['<strong>Start broad, then narrow.</strong> Search your phenomenon + the discipline','<strong>Follow citations.</strong> Reference lists of good papers are your best leads','<strong>You may need to bridge two literatures</strong> if your phenomenon sits at an intersection','<strong>Give each theme a name</strong> — not just a topic, but a phrase that captures a debate or tension','<strong>Use NotebookLM</strong> to synthesize themes once you have 6+ papers']},
+      {label:'What you\'re looking for', items:['What do scholars broadly agree on?','Where do findings conflict or remain inconclusive?','What contexts, populations, or angles are understudied?','What do paper conclusions say "future research should explore"?','What theoretical frameworks keep appearing?','<strong>Is the literature specific to your context</strong>, or does it study the phenomenon more generally? Eventually you\'ll need both.']}
+    ],
+    pitfall:{title:'Summarizing instead of synthesizing',text:'A lit review is not a list of what each paper found. It\'s an argument about what the field collectively knows, where it disagrees, and what remains unanswered. Organize by <em>theme or tension</em>, not by paper. <strong>Give each theme a name.</strong> Ask: if you removed all the author names, would your summary still make a coherent argument? It should.'},
+    exit:['You can name 2–3 themes or debates without looking at your notes — and each has a clear name','You can name at least one specific, honest gap','A research question is beginning to suggest itself from the gap you\'ve found'],
+    reflection:{label:'What gap or tension are you starting to see in the literature?',hint:'Even a rough intuition counts. What keeps coming up as unresolved, understudied, or contested?',placeholder:'Try: "The literature seems to agree that... but hasn\'t examined..." or "Most studies focus on X, leaving Y largely unexplored..."'},
+    irb:false,
+    iterative:'Stages 1 and 2 are deeply iterative. Reading will sharpen your phenomenon, and a sharper phenomenon will focus your reading. Expect to loop back to Stage 1 at least once — that\'s not backtracking, that\'s the process working correctly.'
+  },
+  {
+    cls:'stage-3', name:'Research Question', preview:'What specific gap is your study addressing?',
+    checks:[
+      'I can state my research question in one sentence — open-ended, specific, and rooted in a gap from the literature.',
+      'I can explain exactly which gap in the literature my question addresses and why that gap matters.',
+      'My question is answerable within one study — with realistic methods and resources — and connects back to my original phenomenon.',
+      'My question names a specific <strong>context</strong> — the industry, platform, brand, or population I\'ll study this in. (e.g., not just "fast fashion guilt" but "fast fashion guilt among college-aged Shein shoppers.")'
+    ],
+    cols:[
+      {label:'What makes a strong research question', items:['Starts with "how," "why," or "what" — not yes/no','Specific enough to answer in a single study','Rooted clearly in a gap you found in the literature','Answerable with realistic access and methods','<strong>Names a specific context</strong> — context makes a question answerable rather than endless']},
+      {label:'Types of research questions', items:['<strong>Descriptive:</strong> What does X look like? How common is Y?','<strong>Exploratory:</strong> Why does X happen? What shapes Y?','<strong>Explanatory:</strong> How does X lead to Y? What is the mechanism?','<strong>Comparative:</strong> How does X differ across contexts or groups?']}
+    ],
+    pitfall:{title:'Forcing a question before the lit review is ready',text:'A research question should feel like it <em>falls out</em> of a thorough literature review — not like something you invented before you read enough. If your question doesn\'t connect directly to a gap you can name from specific papers, you likely need more reading first. Premature questions tend to be too broad to answer or disconnected from what\'s actually missing.'},
+    exit:['Your question is one sentence, open-ended, and you can write it from memory','Your question names a specific context — not just a phenomenon in the abstract','You can name the specific papers that revealed the gap your question addresses','Your advisor has seen and responded to at least a draft'],
+    reflection:{label:'Draft your research question here — even a rough version:',hint:'Start with "How does..." or "Why do..." or "What is the relationship between..." — then tighten.',placeholder:'Write your best current draft. Note what feels uncertain or too broad underneath it.'},
+    irb:false
+  },
+  {
+    cls:'stage-4', name:'Theory', preview:'What lens helps explain your phenomenon?',
+    checks:[
+      'I can name at least one theoretical framework relevant to my phenomenon and explain what it actually says — not just its name.',
+      'I can explain how this theory connects to my research question — what it predicts, explains, or helps interpret.',
+      'I understand whether I am applying, extending, or questioning the theory — and can explain the difference.'
+    ],
+    cols:[
+      {label:'What theory does for your thesis', items:['Provides principled explanation, not just description','Anchors your findings in broader scholarly conversations','Shapes how you interpret your data — actively, not decoratively','Makes your contribution legible to other researchers',"<strong>Note:</strong> in marketing research, theory often lives <em>inside</em> the literature review rather than as a separate section — it surfaces from what you read and resurfaces when you interpret findings. It does not have to be its own chapter."]},
+      {label:'How to find your theory', items:['Look at what frameworks appear repeatedly in your most useful papers','Ask your advisor what theories are prominent in this space','Check if theories from adjacent fields apply — cross-disciplinary lenses can be powerful','Know your theory\'s standing in the literature — some are well-established, some are contested']}
+    ],
+    pitfall:{title:'Treating theory as decoration',text:'Naming a theory in your intro and never returning to it is not theoretical grounding — it\'s window dressing. Your theory should actively shape how you collect data, interpret findings, and situate your contribution. If you can delete all mentions of the theory without changing your argument, it isn\'t doing any work.'},
+    exit:['You can explain your theory in plain language without looking it up','You can articulate how the theory connects directly to your research question','You know the theory\'s limitations and can acknowledge them honestly'],
+    reflection:{label:'What theoretical lens are you considering — and why does it fit?',hint:'Name the theory, explain what it says, and explain why it helps make sense of your phenomenon.',placeholder:'Try: "I\'m considering [theory] because it explains... This connects to my research question by..."'},
+    irb:false
+  },
+  {
+    cls:'stage-5', name:'Method', preview:'How will you collect and analyze data?',
+    checks:[
+      'I can explain whether my study is qualitative, quantitative, or mixed — and why that matches my research question.',
+      'I know specifically what my data source is and have a realistic sense of how to access it.',
+      'I have used the <a href="https://rsic.uark.edu/humansubjects/irbcharts.php" target="_blank" style="color:var(--c5);text-decoration:underline;">UA IRB Decision Charts</a> to determine whether my study requires IRB review — and if so, I have discussed the submission timeline with Professor Grace before collecting any data.'
+    ],
+    cols:[
+      {label:'Common approaches', items:['<strong>Interviews / focus groups</strong> — rich qualitative depth','<strong>Surveys / experiments</strong> — patterns across larger samples','<strong>Content / discourse analysis</strong> — texts, ads, documents, media','<strong>Case studies</strong> — deep contextual understanding','<strong>Secondary data analysis</strong> — existing datasets or archives']},
+      {label:'Feasibility questions to answer', items:['Who or what is your data source — and can you realistically access them?','Does this method require IRB approval? (Talk to Professor Grace early.)','What unique access, language skills, or experience do you bring?','What does a realistic timeline look like for data collection + analysis?']}
+    ],
+    pitfall:{title:'Choosing method before question',text:'"I want to do interviews" is a format preference, not a method decision. Your research question should drive the method — not the other way around. Ask yourself: what is the most honest way to find out what my question is asking? If your question asks <em>why</em> something happens, you need a method that captures reasoning and context. If it asks <em>how often</em>, you need something that reaches more people.'},
+    exit:['Method is decided and you can explain why it fits your research question','You have a realistic data access plan — not just a theoretical one','IRB status is confirmed with Professor Grace'],
+    reflection:{label:'How do you think you\'d actually study this — and what\'s your biggest constraint?',hint:'Be honest about what\'s difficult. Access, time, expertise — naming the constraint is the first step to solving it.',placeholder:'What method comes to mind and why? What would make it hard? What unique access or experience do you have?'},
+    irb:true
+  },
+  {
+    cls:'stage-6', name:'Findings & Conclusion', preview:'What will you have learned — and why will it matter?',
+    checks:[
+      'I understand the difference between findings (what I found) and conclusions (what it means) — and can explain both.',
+      'I can articulate, even roughly, what a meaningful contribution from this thesis might look like.',
+      'I can describe how my findings will connect back to the literature I reviewed and the theory I used.'
+    ],
+    cols:[
+      {label:'What strong findings look like', items:['Directly answer the research question',"Organized clearly — either by theme/pattern (common in qualitative work) or by instrument/survey section (common in quantitative work). What matters is the organization serves the reader, not the order you collected data",'Traceable back to evidence — the reader can see how you got there','Neither overstated nor undersold',"<strong>Presentation matters.</strong> Strong Walton theses often use visuals — infographics, pull quotes, charts — as part of how findings are communicated, not as decoration"]},
+      {label:'What strong conclusions do', items:['Interpret — say what the findings <em>mean</em>, not just what they are','Situate findings in the literature you reviewed','Articulate a clear, modest contribution: what do we now know?','Name limitations honestly — this is integrity, not weakness','Suggest where the research conversation goes next',"<strong>On voice:</strong> Walton honors theses are written in first person. Personal reflection on what the research meant to you is welcomed, especially in conclusions."]}
+    ],
+    pitfall:{title:'Restating findings as the conclusion',text:'A conclusion that only summarizes what you found isn\'t a conclusion — it\'s a recap. The conclusion zooms back out: it situates your findings in the broader literature, says what we now know that we didn\'t before, and opens the door to what comes next. The funnel narrows — and then the conclusion cracks it open again.'},
+    exit:null,
+    reflection:{label:'If this thesis goes well, what will you have contributed?',hint:'Try finishing: "After this study, we will know ___ that we didn\'t know before..."',placeholder:"A contribution does not need to be revolutionary. It needs to be honest, specific, and meaningful to the field."},
+    irb:false
+  }
+];
+
+const RESEARCH_STAGE_SIZES = [3,3,4,3,3,3];
+
+const INTERNSHIP_STAGES = [
+  {
+    cls:'istage-1', name:'The Experience & Your Project', preview:'What did you do, and what problem were you actually solving?',
+    checks:[
+      'I can describe my internship experience — the company, my role, and the department or function I worked in — in 2–3 clear sentences.',
+      'I can identify the specific project, problem, or deliverable I was assigned or took on — the real work I did, not just my general duties.',
+      'I can explain why the project mattered to the organization — what was at stake, and what impact a good solution would have.'
+    ],
+    cols:[
+      {label:'What this section anchors', items:['The organizational context your reader needs to understand your work','The specific problem or challenge your project addressed','The human dimension — the people you worked with, the culture you observed, what surprised you']},
+      {label:'What strong internship theses do here', items:['Open with a specific moment or detail that draws the reader in — not a generic overview of the company history','Establish early what your main project was, so the reader understands what they\'re following','Identify the customer, user, or stakeholder whose problem you were trying to solve','Be specific: "School & Office Supplies category" is better than "a merchandising department"']}
+    ],
+    pitfall:{title:'Writing a company brochure instead of a thesis',text:'A common early draft mistake is spending too much time describing the company — its founding, its size, its mission — without establishing what <em>you</em> did and why it mattered. Your reader needs context, but your project and your observations should be the center of gravity. Get to your real work quickly.'},
+    exit:['You can describe your role, project, and the problem it addressed in one paragraph','Your reader would understand what you were trying to accomplish and why it mattered to the organization'],
+    reflection:{label:'What was the real problem your project was trying to solve — and why did it matter?',hint:'Be specific. Who had the problem? What were the consequences of not solving it? What would a good solution make possible?',placeholder:'Try: "The problem I was working on was... It mattered because..."'},
+    irb:false
+  },
+  {
+    cls:'istage-2', name:'Observation & Learning', preview:'What did you see, do, and figure out?',
+    checks:[
+      'I have documented the key things I observed, learned, and did throughout the experience — organized by theme or insight, not just chronologically.',
+      'I can identify 2–3 substantive things I learned that I didn\'t know before — about the industry, the function, the organization, or myself.',
+      'I have connected at least some of my observations to broader marketing concepts, frameworks, or questions — not just described what happened.'
+    ],
+    cols:[
+      {label:'What belongs here', items:['Key learnings from meetings, projects, store visits, conversations with mentors and executives','Observations about how the organization works — its culture, decision-making, customer focus','Your own analysis of what you saw: what worked, what didn\'t, what surprised you','Connections between your experience and what you\'ve learned in your marketing coursework']},
+      {label:'How to organize it', items:["<strong>Thematic is usually better than chronological.</strong> Journal-style works for some theses, but thematic organization — grouping by insight rather than by date — tends to make for a stronger analytical argument",'<strong>Use specific details.</strong> Naming the actual people, tools, data systems, and conversations you encountered makes the thesis credible and vivid','<strong>Analysis > description.</strong> Don\'t just describe what happened — say what it meant, what you learned from it, and how it connects to the bigger picture']}
+    ],
+    pitfall:{title:'Describing without analyzing',text:'The most common weakness in internship theses is a lot of detailed description with very little analysis. Describing that you went on a store walk is description. Observing that the modular strategy wasn\'t matching the neighborhood market customer\'s actual needs, analyzing why that mattered, and connecting it to assortment optimization theory — that\'s analysis. Always ask: what does this mean, and why does it matter beyond just what happened?'},
+    exit:['You have documented your key learnings and can organize them by theme','You have at least one substantive analytical observation — not just description — in each major section','You can explain how at least one learning connects to a marketing concept or framework'],
+    reflection:{label:'What is the most important thing you learned — and why does it matter beyond your internship?',hint:'Try to get past "I learned the importance of X." Push to: what specifically did you learn about X, and what does that tell us about marketing, organizations, or customers more broadly?',placeholder:'The most important thing I learned was... It matters beyond my internship because...'},
+    irb:false
+  },
+  {
+    cls:'istage-3', name:'Connecting to the Literature', preview:'How does your experience speak to what scholars already know?',
+    checks:[
+      'I have identified at least 3–5 academic sources or conceptual frameworks that are relevant to what I observed and learned.',
+      'I can explain how my experience confirms, complicates, or extends what the literature says — not just summarize what the literature says in isolation.',
+      'The literature feels like it\'s in conversation with my experience — not like a separate section I dropped in to meet an academic requirement.'
+    ],
+    cols:[
+      {label:'What the literature connection does', items:['Shows that your thesis is academically grounded, not just a journal','Helps you articulate why what you observed is significant — giving your experience scholarly weight','Provides frameworks that help you organize and interpret what you saw','Demonstrates that you can move between practice and theory fluently']},
+      {label:'How strong internship theses handle this', items:['Some weave literature throughout the thesis — using frameworks as interpretive lenses at each stage of their experience','Others have a more concentrated literature review section that establishes the conceptual foundation, then apply it to the experience',"<strong>Both approaches work.</strong> What does not work is bolting a lit review onto the beginning that has nothing to do with the rest of the thesis",'Look at what marketing frameworks appear in your experience naturally — customer centricity, assortment optimization, transmedia storytelling, cultural branding — those are your anchors']}
+    ],
+    pitfall:{title:'The disconnected literature review',text:'The most common academic failure in internship theses is a literature review that lives in its own section and never reappears. If you cite a framework in your lit review and then never mention it again when describing your experience, it isn\'t doing any work. Your literature should actively illuminate your experience — and your experience should be evidence that the literature is relevant to real practice.'},
+    exit:['You can name 3–5 academic sources or frameworks and explain why each one is relevant to your experience',"Your literature does not just summarize scholarship — it connects to what you observed",'The connection between theory and practice feels natural, not forced'],
+    reflection:{label:'Which marketing concept or framework best explains the most important thing you observed?',hint:'Think about frameworks from your coursework or papers you\'ve found. What concept gives your experience the most meaning?',placeholder:'The framework that best explains what I observed is... It helps because...'},
+    irb:false
+  },
+  {
+    cls:'istage-4', name:'Your Contribution & Recommendations', preview:'What did your work produce — and what would you tell others?',
+    checks:[
+      'I can describe the deliverable or outcome of my project — what I produced, presented, or recommended — clearly and specifically.',
+      'I can articulate what my contribution was: what the organization learned, changed, or was better able to do because of my work.',
+      'I have reflected on what future students, practitioners, or scholars could learn from my experience.'
+    ],
+    cols:[
+      {label:'Types of contributions in internship theses', items:['A strategic recommendation that was adopted or seriously considered by leadership','A framework, dashboard, or tool that the organization put into use','An analysis that revealed something the organization didn\'t previously know','A personal takeaway about leadership, culture, or practice that others can learn from','A critique or complication of an existing approach — what didn\'t work and why']},
+      {label:'What advice sections do well', items:['Be specific and honest — advice like "ask questions" is generic. What specific questions would you tell the next intern to ask?','Connect your advice to the larger lessons of your thesis — not just tactical tips','Address what you would do differently if you could start over','Identify what the experience taught you about the profession, not just the company']}
+    ],
+    pitfall:{title:'Underselling your contribution',text:'Students often downplay what they actually accomplished. If your recommendation was adopted by an SVP and is being implemented next year, that\'s significant — say so. If your dashboard was put into use the next day, that\s concrete impact. Your contribution does not have to be revolutionary to be meaningful. But it does have to be clearly articulated, with evidence.'},
+    exit:['You can describe your project\'s outcome and impact in specific, concrete terms','You have articulated what future students or practitioners can learn from your experience','Your thesis has a clear sense of what you contributed — not just what you observed'],
+    reflection:{label:'What would you tell a student who is about to start this internship — or a similar one?',hint:'Go beyond "ask questions and say yes to everything." What specifically would they need to know to do excellent work?',placeholder:'The most important advice I would give is... I wish I had known...'},
+    irb:false
+  },
+  {
+    cls:'istage-5', name:'Reflection & Limitations', preview:'What did this experience teach you — and where does your thesis fall short?',
+    checks:[
+      'I have reflected honestly on my personal and professional growth — not just what I learned about business, but what I learned about myself.',
+      'I have acknowledged the limitations of my thesis honestly: what I couldn\'t access, what I couldn\'t include, and what would make this work stronger.',
+      'My conclusion leaves the reader with a clear sense of why this experience mattered — to me, to the organization, and to the broader practice of marketing.'
+    ],
+    cols:[
+      {label:'What strong reflection looks like', items:['Specific — names the exact moments, conversations, or realizations that changed your thinking','Honest — acknowledges what was hard, what you got wrong, what you would do differently','Personal — written in first person with your genuine voice, not generic professional language','Connecting — ties your personal growth to the thesis\'s larger argument or contribution']},
+      {label:'Common limitations to acknowledge', items:['Confidentiality constraints on the data or insights you can share','Time constraints that limited the depth of your project','Access constraints — people or systems you couldn\'t reach','The fact that your experience is one data point and may not generalize']}
+    ],
+    pitfall:{title:'Reflection that isn\'t really reflection',text:'Generic statements like "This internship taught me the importance of communication and teamwork" are not reflection — they\'re resume bullet points. Strong reflection names a specific thing that changed your thinking and explains why. It reads like a person genuinely grappling with what they experienced, not performing gratitude. Don\'t be afraid to say what was hard, what confused you, or what you would do differently.'},
+    exit:null,
+    reflection:{label:'What changed in how you think about marketing — or about yourself as a professional — because of this experience?',hint:'Try to name something specific. What did you believe before that you now see differently?',placeholder:'Before this experience, I thought... Now I understand... The most surprising thing was...'},
+    irb:false
+  }
+];
+const INTERNSHIP_STAGE_SIZES = [3,3,3,3,3];
+
+const PRE_INTERNSHIP_STAGES = [
+  {
+    cls:"istage-1", name:"Get Oriented Before You Begin", preview:"A brief check-in, an example thesis, and the right mindset — before day one.",
+    checks:[
+      "I have had a brief check-in with Professor Grace before my internship begins — to talk through what I am curious about, what to pay attention to, and what the thesis process will look like.",
+      "I understand that my thesis topic will likely emerge from the experience itself — possibly from something I never expected to care about — and I am going in with curiosity rather than a predetermined answer.",
+      "I have read at least one — ideally two — examples of strong Walton honors internship theses, so I know what the finished product looks like and understand that structure varies widely depending on what the student experienced and learned."
+    ],
+    cols:[
+      {label:"How thesis topics actually emerge from internships", items:[
+        "Sometimes the thesis is about your assigned project — you go deep on the problem, connect it to scholarship, and argue something meaningful about it",
+        "Sometimes the thesis is about something you encountered unexpectedly — a strategy, a decision framework, a cultural practice — that caught your attention and stayed with you",
+        "Both are equally valid. What matters is that something genuinely captured your intellectual curiosity",
+        "By around week 4 or 5, something should be pulling your attention more than other things. That signal is worth noting — bring it to Professor Grace.",
+        "If by the midpoint nothing has surprised or intrigued you, that is a signal to seek out more conversations and say yes to more experiences"
+      ]},
+      {label:"What to know about internship thesis structure", items:[
+        "<strong>It is not a journal.</strong> A journal records what happened. A thesis analyzes what it means, connects it to scholarship, and makes a contribution.",
+        "<strong>It is not a company report.</strong> Your thesis is your intellectual work — your observations, your analysis, your argument. The company is the context, not the author.",
+        "<strong>There is no single required structure.</strong> Some strong theses are organized chronologically with an application section at the end. Others have a full literature review and a thematic findings section. What matters is that the structure serves your argument.",
+        "<strong>It is written in first person</strong> — this is expected and appropriate at Walton. Your voice, your observations, and your reflection are part of what makes it a thesis."
+      ]}
+    ],
+    pitfall:{title:"Going in with your thesis topic already decided", text:"Arriving at your internship with a fully formed thesis question can narrow your attention before you know what is actually worth paying attention to. One of the strongest recent Walton internship theses began as a project about merchandise forecasting and became an original framework about transmedia brand storytelling — because the student kept noticing things that surprised her and followed that curiosity. The note-taking system you set up in Stage 2 is what makes that possible. Go in open."},
+    exit:[
+      "You have had a pre-internship check-in with Professor Grace",
+      "You have read at least one example Walton internship thesis — ideally two, since they vary so much",
+      "You are going into the experience with curiosity about what you might discover, rather than a fixed idea of what you will write about"
+    ],
+    reflection:{label:"What are you most curious about going into this internship — and what do you most want to pay attention to?", hint:"You do not need a thesis question yet. Just name what draws your attention and what you are genuinely curious to learn more about.", placeholder:"I am most curious about... I want to pay attention to... I have no idea yet what my thesis will be about, but I am open to..."},
+    irb:false
+  },
+  {
+    cls:"istage-2", name:"Set Up Your System", preview:"Note-taking, your project log, and how to build connections throughout the experience.",
+    checks:[
+      "I have chosen a format for weekly notes that I will actually use — a journal, a shared doc, a notes app — and I have written my first entry before the internship begins.",
+      "I know the five things to capture each week: what happened, what surprised me, what I learned from conversations, what marketing concepts I want to understand better, and what questions I still have.",
+      "I have a separate log for my assigned internship project — the problem I am given, how my understanding evolves, and what the outcome ends up being."
+    ],
+    cols:[
+      {label:"Your weekly note prompt — use this every week", items:[
+        "<strong>What happened this week?</strong> Key tasks, meetings, decisions, observations — the raw material",
+        "<strong>What surprised me?</strong> Something that contradicted what I expected, or that I found unexpectedly interesting. This is your most important prompt.",
+        "<strong>What did I learn from a conversation?</strong> Something a manager, executive, peer, or store operator said that changed or deepened how I think about something",
+        "<strong>What marketing concept or idea did I encounter that I want to understand better?</strong> A strategy, a framework, a tension, a decision — anything that made you want to know more. You do not need to know what it is called yet. Just describe what you noticed.",
+        "<strong>What questions do I still have?</strong> Unanswered things, tensions you observed, things that did not quite make sense"
+      ]},
+      {label:"Building connections throughout — the snowball approach", items:[
+        "You may not know who the most valuable people to talk to are before you start — and that is fine. The goal is to build your network as you go.",
+        "<strong>The snowball approach:</strong> after every meaningful conversation, ask the person who else they would recommend you speak with. One good conversation leads to the next.",
+        "Aim to talk to people outside your immediate team — someone in an adjacent function, a senior leader, a store operator, a peer intern in a different department",
+        "Prepare 2-3 specific questions before each conversation. Saying you are working on an honors thesis and are curious how someone thinks about X in their role — and asking for 20 minutes — works far better than a vague request.",
+        "Add every conversation to your weekly notes immediately: what did you learn, what surprised you, what do you want to understand better?",
+        "<strong>Note:</strong> your thesis may end up being about your assigned project — or about something else you encountered. The log keeps both possibilities alive."
+      ]}
+    ],
+    pitfall:{title:"Waiting until it is over to write things down", text:"Memory is unreliable and fades fast. An observation you do not capture within 24 hours is often gone. The students who write the strongest internship theses are the ones who wrote things down consistently — not because they were disciplined, but because they were genuinely curious. A short note the evening after a surprising conversation is worth more than a long reconstruction three weeks later."},
+    exit:[
+      "You have a note-taking format chosen and your first entry written",
+      "You can describe the five weekly prompts from memory — especially the what-surprised-me prompt",
+      "You have a separate project log started, even if it only has one line so far",
+      "You understand the snowball networking approach and plan to use it early in the experience"
+    ],
+    reflection:{label:"What is your plan for capturing what you learn — and when specifically will you write each week?", hint:"The more concrete the plan, the more likely you are to follow it. Name the day, the format, and roughly how long you will spend.", placeholder:"I plan to take notes using... I will write on... each week. The thing I most want to make sure I capture is..."},
+    irb:false
+  }
+];
+const PRE_INTERNSHIP_STAGE_SIZES = [3,3];
+
+const PRE_INTERNSHIP_LOCATIONS = [
+  {title:"You haven't started yet — this is the most important window to prepare.",body:"Students who arrive at their internship with a thesis mindset — curious, observant, and ready to document — write dramatically stronger theses than those who treat the thesis as something to figure out afterward. Use this guide to set up your system and clarify your focus before day one.",focus:0}
+];
+
+const PROJECT_STAGES = [
+  {
+    cls:'istage-1', name:'The Problem & Your Context', preview:'What are you solving, and for whom?',
+    checks:[
+      'I can describe in 2–3 sentences the specific real-world business problem or opportunity my project addresses.',
+      'I can clearly identify the company, brand, industry, or context in which this problem lives.',
+      'I can explain why this problem matters — what\'s at stake if it isn\'t solved, and who benefits from a good solution.'
+    ],
+    cols:[
+      {label:'What this section establishes', items:['The business context your reader needs to understand your project','The specific problem or opportunity you\'re responding to','The stakes — why does this matter to the organization, consumer, or market?','Your positioning: are you a consultant, a strategist, a researcher? Who is your audience?']},
+      {label:'Strong project theses open with', items:['A clear, specific problem statement — not "I want to explore marketing" but a real gap or challenge',"Context that is informative but not exhaustive — your reader does not need a history of the industry, they need to understand the specific situation",'A sense of what a good solution would make possible — what would success look like?']}
+    ],
+    pitfall:{title:'Starting with background instead of a problem',text:'A common opening mistake is spending several pages on company history or industry overview before establishing what problem you\'re actually solving. Background is only interesting once the reader knows what it\'s in service of. State your problem clearly first — then provide the context needed to understand it.'},
+    exit:['You can state the problem your project addresses in two sentences','Your reader would understand the context, stakes, and what success looks like'],
+    reflection:{label:'What is the specific problem or opportunity your project addresses — and why does it matter?',hint:'Be specific. Who has this problem? What are the consequences of not addressing it?',placeholder:'The problem I\'m addressing is... It matters because...'},
+    irb:false
+  },
+  {
+    cls:'istage-2', name:'Research & Analysis', preview:'What evidence grounds your recommendations?',
+    checks:[
+      'I have gathered relevant evidence — market data, consumer insights, competitive analysis, academic literature, or primary research — to support my project.',
+      'I can explain how my analysis informs the specific recommendations or decisions my project makes.',
+      'I have connected my project to at least 3–5 academic sources, frameworks, or bodies of literature that are directly relevant to my approach.'
+    ],
+    cols:[
+      {label:'Types of evidence in project theses', items:['<strong>Academic literature</strong> — frameworks and theories that explain the phenomenon you\'re addressing','<strong>Market & competitive research</strong> — industry data, competitor analysis, market sizing','<strong>Consumer insights</strong> — personas, empathy maps, survey data, behavioral research','<strong>Primary research</strong> — interviews, observations, or your own data collection (note: may require IRB if involving human subjects)','<strong>Secondary data</strong> — sales data, social media analytics, existing reports']},
+      {label:'How to use literature in a project thesis', items:['Frameworks from literature should actively shape your recommendations — not just appear in a section and disappear','Use theory to explain <em>why</em> your approach will work — cultural branding theory, consumer behavior research, or transmedia storytelling principles aren\'t just background, they\'re evidence','Name your sources specifically — vague references to "research shows" aren\'t credible']}
+    ],
+    pitfall:{title:'Deliverable without academic grounding',text:'A creative brief, brand strategy, or market analysis is a professional document. For it to be a <em>thesis</em>, it needs to be grounded in scholarship — you need to show that your approach is informed by what we know from research, not just intuition or industry convention. The academic literature isn\'t decoration; it\'s the foundation that distinguishes your thesis from a consulting deck.'},
+    exit:['You have gathered evidence across at least two different types (e.g., academic literature + market research)','Your analysis directly informs the recommendations your project makes','Your literature feels like it\'s in conversation with your project, not separate from it'],
+    reflection:{label:'What evidence most directly shaped your approach — and why?',hint:'Point to a specific source, dataset, or finding that changed or confirmed how you were thinking about the problem.',placeholder:'The most important evidence that shaped my project was... It changed/confirmed my approach by...'},
+    irb:false
+  },
+  {
+    cls:'istage-3', name:'Your Framework or Deliverable', preview:'What are you actually producing — and what makes it original?',
+    checks:[
+      'I can describe my deliverable clearly and specifically — what it is, what it contains, and who it\'s for.',
+      'I can explain what makes my approach original — not just applying an existing template, but making a genuine contribution of thinking, analysis, or synthesis.',
+      'My deliverable is directly responsive to the problem I identified in Stage 1 — the connection is clear and coherent.'
+    ],
+    cols:[
+      {label:'Types of project deliverables', items:['<strong>Creative brief / campaign</strong> — a strategic pitch for a brand, product, or initiative','<strong>Original framework</strong> — a model or process you propose and defend (e.g., a brand revival framework)','<strong>Market entry or expansion strategy</strong> — a plan for entering a new market or segment','<strong>Brand strategy or audit</strong> — a comprehensive analysis of a brand\'s current position and future direction','<strong>Competitive or industry analysis</strong> — a structured analysis of a market, category, or competitive set']},
+      {label:'What makes a deliverable thesis-worthy', items:["It makes a genuine argument — not just describes options, but recommends a specific approach and defends it","It synthesizes evidence into original thinking — you have connected things in a way that was not obvious before","It is responsive to a real problem — not an exercise for the sake of an exercise","It has enough analytical depth to stand alone as evidence of your ability to think like a marketer"]}
+    ],
+    pitfall:{title:'Deliverable as assignment, not argument',text:'The difference between a strong project thesis and a class assignment is that a thesis makes an <em>argument</em>. It doesn\'t just present options or describe a situation — it takes a position, makes recommendations, and defends them with evidence. Ask yourself: what claim is my thesis making? If you can\'t answer that, you need to push further.'},
+    exit:['Your deliverable is clearly described and directly addresses the problem you identified','You can explain what makes your approach original — what you figured out that wasn\'t obvious','Your thesis makes a claim and defends it, rather than just describing a situation or presenting options'],
+    reflection:{label:'What is the central argument or recommendation of your project — and what evidence supports it most strongly?',hint:'Try finishing: "My thesis argues that..." or "My recommendation is... because..."',placeholder:'The central argument of my project is... The evidence that most strongly supports it is...'},
+    irb:false
+  },
+  {
+    cls:'istage-4', name:'Limitations & Future Directions', preview:'Where does your project fall short — and what comes next?',
+    checks:[
+      'I have identified the key limitations of my project — what my analysis couldn\'t account for, what data I didn\'t have access to, and what assumptions I made.',
+      'I have suggested specific directions for future research or practice that would build on my work.',
+      'My conclusion leaves the reader with a clear sense of what my project contributes — and what it opens up.'
+    ],
+    cols:[
+      {label:'Common limitations in project theses', items:['Lack of primary data — relying on secondary sources where original research would be stronger','Geographic or demographic scope — recommendations may not generalize beyond the specific context','Confidentiality constraints — data or insights that couldn\'t be shared publicly','Time constraints — a more thorough analysis would require more time and resources','Assumptions embedded in the analysis that may not hold in practice']},
+      {label:'Strong conclusions do this', items:['Synthesize the argument — remind the reader of the central claim and why it matters','Articulate the contribution clearly — what do we now know or have that we didn\'t before?','Name limitations honestly without undermining the entire project','Point forward — what would the next step be? What would a practitioner or researcher do next?','Written in first person with genuine voice — don\'t hide behind passive voice in the conclusion']}
+    ],
+    pitfall:{title:'The conclusion that just restates',text:'Ending your thesis with a summary of what you already covered isn\'t a conclusion — it\'s a recap. A strong conclusion zooms out: it situates your contribution in the larger landscape, acknowledges where your analysis falls short, and suggests where the work should go next. It leaves the reader with something to think about, not just a reminder of what they already read.'},
+    exit:null,
+    reflection:{label:'What is the most significant limitation of your project — and what would you do differently with more time or resources?',hint:'Be honest and specific. What did you have to assume, skip, or simplify that matters?',placeholder:'The most significant limitation of my project is... With more time or resources, I would...'},
+    irb:false
+  }
+];
+const PROJECT_STAGE_SIZES = [3,3,3,3];
+
+const RESEARCH_LOCATIONS = [
+  {title:"You're at the very beginning — and that's exactly right.",body:"Right now, your most important job is <em>sharpening your phenomenon</em>. Stages 1 and 2 will talk to each other constantly — you sharpen your phenomenon by reading, and you focus your reading by sharpening your phenomenon. If you're in spring of your junior year, you're right on the honors college's recommended timeline.",focus:0},
+  {title:"You have a phenomenon — now the literature is your main work.",body:"Stage 2 is where the research process really takes shape. Your reading will simultaneously test and sharpen your Stage 1 phenomenon — expect your description of it to evolve. Focus on identifying themes and gaps, not just collecting papers. If you're heading into summer before senior year, this is exactly where you should be.",focus:1},
+  {title:"Your lit review is taking shape — a research question should be emerging.",body:"If you've read widely and synthesized by theme, a research question should be starting to suggest itself from the gaps you've found. If it isn't, that's usually a signal to keep reading or to talk through what you're finding with Professor Grace. Fall of senior year is the recommended time to complete the bulk of your research.",focus:2},
+  {title:"You have a research question — now theory and method need attention.",body:"Stages 4 and 5 are often worked on together, since theory shapes what you look for in data and method shapes what you can say. <strong>Important:</strong> if your method involves human participants, IRB approval must come before data collection. Do not wait on this.",focus:3},
+  {title:"You're in the work — method is decided and data is underway.",body:"Stay connected to your research question as you collect and analyze — it's easy to drift. If you haven't already confirmed IRB status, do that immediately before proceeding. Spring of senior year is when the honors college expects final touches — so data collection should happen well before then.",focus:4}
+];
+
+const INTERNSHIP_LOCATIONS = [
+  {title:"You're preparing — now is the time to set yourself up for a great thesis.",body:"The best internship theses are built by students who go in knowing what to pay attention to. Start by thinking about what problem you'd most like to work on, what questions you want to ask leaders, and how you'll document your learning throughout the experience. Curiosity is your main asset right now.",focus:0},
+  {title:"You're mid-experience — what you capture now shapes your thesis.",body:"You're in the most valuable phase. Pay attention not just to what you're doing but to <em>why</em> it works or doesn't. Take notes on specific observations, conversations, and moments of insight. The details you capture now are the evidence your thesis will rest on. Think thematically, not just chronologically.",focus:1},
+  {title:"Your experience is complete — now it's time to shape it into a thesis.",body:"You have everything you need — now it's a writing and framing challenge. Start by identifying the 2–3 most important things you learned. Then ask which marketing frameworks or literature best illuminate those observations. Your structure will emerge from that connection between experience and scholarship.",focus:2},
+  {title:"You're writing — now it's about connecting experience to argument.",body:"The writing stage is where many internship theses either earn their academic credibility or fall short of it. Make sure your literature isn't just background — it should actively interpret your experience. Ask yourself for every section: am I just describing what happened, or am I analyzing what it means?",focus:3}
+];
+
+const PROJECT_LOCATIONS = [
+  {title:"You have an idea — now it needs to become a problem worth solving.",body:"The difference between a good project thesis and a great one often starts here: with a specific, well-defined problem, not just a general interest. Before you commit to a topic, push yourself to articulate exactly what's broken, missing, or unexplored — and for whom. That problem will anchor everything else.",focus:0},
+  {title:"Your project is scoped — now build the evidence base.",body:"This is the research and analysis phase. Your goal is to gather enough evidence — from academic literature, market research, and consumer insights — that your recommendations are grounded rather than intuitive. The literature shouldn't be an add-on; it should shape how you think about the problem.",focus:1},
+  {title:"You're building — now it's about making your argument, not just your deliverable.",body:"This is the most exciting phase, but also where project theses sometimes lose their academic footing. As you build your deliverable, keep asking: what claim is my thesis making? Your deliverable should be evidence of an argument, not just a polished professional document.",focus:2},
+  {title:"You're almost done — now make sure the argument is complete.",body:"At this stage, the most important thing is to make sure your conclusion situates your contribution clearly. Don't just summarize what you did — articulate what your project adds to the conversation, what its limitations are, and what someone would do next if they wanted to build on it.",focus:3}
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────
+let currentTrack = null;
+let currentProgressIdx = null;
+let currentStages = [];
+let currentStageSizes = [];
+let currentLocations = [];
+
+// ── ONBOARDING ──────────────────────────────────────────────────────────
+function initOnboarding() {
+  // Track buttons
+  ['research','internship','project'].forEach(track => {
+    const btn = document.getElementById('btn-'+track);
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#onboard-step1 .onboard-btn').forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+      currentTrack = track;
+      document.getElementById('trackNextBtn').disabled = false;
+    });
+  });
+
+  document.getElementById('trackNextBtn').addEventListener('click', function() {
+    if (!currentTrack) return;
+    document.getElementById('onboard-step1').style.display = 'none';
+    document.getElementById('onboard-step2-'+currentTrack).style.display = 'block';
+  });
+
+  // Back buttons
+  ['research','internship','project'].forEach(track => {
+    const backBtn = document.getElementById('back-from-'+track);
+    if (!backBtn) return;
+    backBtn.addEventListener('click', function() {
+      document.getElementById('onboard-step2-'+track).style.display = 'none';
+      document.getElementById('onboard-step1').style.display = 'block';
+      currentTrack = null;
+      currentProgressIdx = null;
+      document.getElementById('trackNextBtn').disabled = true;
+      document.querySelectorAll('#onboard-step1 .onboard-btn').forEach(b => b.classList.remove('selected'));
+    });
+  });
+
+  // Research progress options
+  setupProgressOptions('research-progress-options', 'rp-', 'startResearchBtn', 5);
+  setupProgressOptions('internship-progress-options', 'ip-', 'startInternshipBtn', 4);
+  setupProgressOptions('project-progress-options', 'pp-', 'startProjectBtn', 4);
+
+  document.getElementById('startResearchBtn').addEventListener('click', function() { if (currentProgressIdx !== null) startTool(); });
+  document.getElementById('startInternshipBtn').addEventListener('click', function() { if (currentProgressIdx !== null) startTool(); });
+  document.getElementById('startProjectBtn').addEventListener('click', function() { if (currentProgressIdx !== null) startTool(); });
+
+  document.getElementById('startOverBtn').addEventListener('click', function() { startOver(); });
+}
+
+function startOver() {
+  // Reset state
+  currentTrack = null;
+  currentProgressIdx = null;
+  currentStages = [];
+  currentStageSizes = [];
+  currentLocations = [];
+
+  // Hide main tool, show onboarding step 1
+  document.getElementById('main-tool').style.display = 'none';
+  document.getElementById('onboarding').style.display = 'block';
+  document.getElementById('onboard-step1').style.display = 'block';
+  ['research','internship','project'].forEach(t => {
+    const s2 = document.getElementById('onboard-step2-'+t);
+    if (s2) s2.style.display = 'none';
+  });
+
+  // Reset button states
+  document.getElementById('trackNextBtn').disabled = true;
+  document.querySelectorAll('#onboard-step1 .onboard-btn').forEach(b => b.classList.remove('selected'));
+  ['startResearchBtn','startInternshipBtn','startProjectBtn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = true;
+  });
+  ['research-progress-options','internship-progress-options','project-progress-options'].forEach(id => {
+    const container = document.getElementById(id);
+    if (container) container.querySelectorAll('.onboard-btn').forEach(b => b.classList.remove('selected'));
+  });
+
+  // Clear stage container
+  document.getElementById('stageContainer').innerHTML = '';
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressCount').textContent = '0 completed';
+
+  document.getElementById('onboarding').scrollIntoView({behavior:'smooth'});
+}
+
+function setupProgressOptions(containerId, prefix, startBtnId, count) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  for (let i = 0; i < count; i++) {
+    const btn = document.getElementById(prefix+i);
+    if (!btn) continue;
+    btn.addEventListener('click', (function(idx) {
+      return function() {
+        container.querySelectorAll('.onboard-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        currentProgressIdx = idx;
+        document.getElementById(startBtnId).disabled = false;
+      };
+    })(i));
+  }
+}
+
+function startTool() {
+  document.getElementById('onboarding').style.display = 'none';
+  document.getElementById('main-tool').style.display = 'block';
+
+  if (currentTrack === 'research') {
+    currentStages = RESEARCH_STAGES;
+    currentStageSizes = RESEARCH_STAGE_SIZES;
+    currentLocations = RESEARCH_LOCATIONS;
+    document.getElementById('trackLabelPill').textContent = 'Research option';
+    document.getElementById('trackLabelPill').style.cssText = 'background:var(--c1p);color:var(--c1d);';
+  } else if (currentTrack === 'internship') {
+    // Pre-internship gets its own stages
+    if (currentProgressIdx === 0) {
+      currentStages = PRE_INTERNSHIP_STAGES;
+      currentStageSizes = PRE_INTERNSHIP_STAGE_SIZES;
+      currentLocations = PRE_INTERNSHIP_LOCATIONS;
+      document.getElementById('trackLabelPill').textContent = 'Internship — Pre-Experience';
+      document.getElementById('trackLabelPill').style.cssText = 'background:var(--cip);color:var(--cid);';
+    } else {
+      currentStages = INTERNSHIP_STAGES;
+      currentStageSizes = INTERNSHIP_STAGE_SIZES;
+      currentLocations = INTERNSHIP_LOCATIONS;
+      document.getElementById('trackLabelPill').textContent = 'Internship option';
+      document.getElementById('trackLabelPill').style.cssText = 'background:var(--cip);color:var(--cid);';
+    }
+  } else {
+    currentStages = PROJECT_STAGES;
+    currentStageSizes = PROJECT_STAGE_SIZES;
+    currentLocations = PROJECT_LOCATIONS;
+    document.getElementById('trackLabelPill').textContent = 'Project option';
+    document.getElementById('trackLabelPill').style.cssText = 'background:var(--c4p);color:var(--c4d);';
+  }
+
+  // For internship track (non-pre), currentProgressIdx is 1-3 but locations array is 0-indexed
+  const locIdx = (currentTrack === 'internship' && currentProgressIdx > 0)
+    ? Math.min(currentProgressIdx - 1, currentLocations.length - 1)
+    : Math.min(currentProgressIdx, currentLocations.length - 1);
+
+  const loc = currentLocations[locIdx];
+  document.getElementById('locationTitle').textContent = loc.title;
+  document.getElementById('locationBody').innerHTML = loc.body;
+
+  renderStages();
+  updateProgress();
+
+  const focusIdx = loc.focus;
+  const focusCard = document.getElementById('card-'+focusIdx);
+  if (focusCard) {
+    focusCard.classList.add('focus-stage');
+    const badge = document.getElementById('badge-'+focusIdx);
+    if (badge) badge.insertAdjacentHTML('afterend', '<span class="focus-pill">focus here</span>');
+    toggleCard(focusIdx);
+  }
+
+  // Add not-ready notes for stages beyond focus+1
+  for (let i = focusIdx + 2; i < currentStages.length; i++) {
+    const nrn = document.getElementById('nrn-'+i);
+    if (nrn) {
+      nrn.innerHTML = `<div class="not-ready-note"><div class="nrn-icon">→</div><div class="nrn-text"><strong>This stage comes later.</strong><p>Based on where you are now, focus your energy on earlier stages first. Read through for orientation if you are curious.</p></div></div>`;
+    }
+  }
+
+  document.getElementById('main-tool').scrollIntoView({behavior:'smooth'});
+}
+
+// ── RENDER STAGES ──────────────────────────────────────────────────────
+function renderStages() {
+  const container = document.getElementById('stageContainer');
+  let html = '';
+
+  // Iteration note for research
+  if (currentTrack === 'research') {
+    html += `<div class="iteration-note"><div class="iteration-icon">↺</div><div class="iteration-text"><strong>This process is iterative, not linear.</strong> Stages 1 and 2 in particular talk to each other constantly — you sharpen your phenomenon by reading, and you focus your reading by sharpening your phenomenon. Moving back to an earlier stage isn't falling behind; it's how good research works.</div></div>`;
+  } else if (currentTrack === 'internship') {
+    html += `<div class="iteration-note"><div class="iteration-icon">↺</div><div class="iteration-text"><strong>Internship theses are iterative by nature.</strong> You may find that as you write, you identify things you wish you had observed more carefully. Conversations with Professor Grace throughout the process — not just at the beginning and end — will make the thesis significantly stronger.</div></div>`;
+  } else {
+    html += `<div class="iteration-note"><div class="iteration-icon">↺</div><div class="iteration-text"><strong>Project theses evolve as you research and write.</strong> Your initial problem statement will likely sharpen as you dig into the evidence, and your deliverable may shift as you learn more. Build in time to revisit your framing — the best project theses show evidence of this kind of intellectual development.</div></div>`;
+  }
+
+  currentStages.forEach((stage, i) => {
+    const numLabel = i + 1;
+    if (i > 0) html += `<div class="stage-connector"><div class="connector-line"></div></div>`;
+    html += `<div class="stage-card ${stage.cls}" id="card-${i}">
+      <div class="stage-header" onclick="toggleCard(${i})">
+        <div class="stage-number-block">${numLabel}</div>
+        <div class="stage-header-content">
+          <div class="stage-name">${stage.name}</div>
+          <div class="stage-question-preview">${stage.preview}</div>
+        </div>
+        <div class="stage-toggle">
+          <div class="toggle-icon">▼</div>
+          <span class="stage-badge" id="badge-${i}">—</span>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-body-inner">
+          <div id="nrn-${i}"></div>`;
+
+    // Checklist
+    html += `<div class="body-grid"><div class="full-col"><div class="section-label">Self-check — mark what's honestly true right now</div><div class="checklist">`;
+    stage.checks.forEach((c, ci) => {
+      const id = `c${i}-${ci}`;
+      html += `<div class="check-item"><input type="checkbox" id="${id}" onchange="updateProgress()"><label for="${id}">${c}</label></div>`;
+    });
+    html += `</div></div>`;
+
+    // Columns
+    stage.cols.forEach(col => {
+      html += `<div><div class="section-label">${col.label}</div>`;
+      if (col.chips) {
+        html += `<div class="tool-chips">${col.chips.map(c=>`<span class="tool-chip">${c}</span>`).join('')}</div>`;
+      }
+      html += `<ul class="info-list">${col.items.map(item=>`<li>${item}</li>`).join('')}</ul></div>`;
+    });
+
+    // Iterative note (stage 2 research)
+    if (stage.iterative) {
+      html += `<div class="full-col"><div class="iteration-note" style="margin-bottom:0"><div class="iteration-icon">↺</div><div class="iteration-text"><strong>Stages 1 and 2 are deeply iterative.</strong> ${stage.iterative}</div></div></div>`;
+    }
+
+    // Pitfall
+    html += `<div class="full-col"><div class="pitfall-box"><div class="pitfall-icon">!</div><div><div class="pitfall-title">Common pitfall — ${stage.pitfall.title}</div><div class="pitfall-text">${stage.pitfall.text}</div></div></div></div>`;
+
+    // IRB callout
+    if (stage.irb) {
+      html += `<div class="full-col"><div class="irb-box"><div class="irb-title">IRB approval — do not skip this</div><p class="irb-text">If your study involves collecting data from human participants — interviews, surveys, observations, experiments — you must have IRB approval <em>before</em> collecting a single data point. <strong>UA IRB cannot approve projects retroactively.</strong> Data collected without prior approval cannot be used in your thesis.</p><p class="irb-text">Most marketing thesis methods (surveys, interviews) typically qualify for <strong>exempt or expedited review</strong> — meaning the process is relatively quick — but you still need to submit and receive confirmation before beginning. Submissions go through <strong>Streamlyne</strong>. Professor Grace will be listed as faculty PI on your protocol.</p><div class="irb-links"><a href="https://rsic.uark.edu/humansubjects/irbcharts.php" target="_blank" class="irb-btn-dark">UA IRB Decision Charts →</a><a href="https://rsic.uark.edu/humansubjects/protocolsubmissions.php" target="_blank" class="irb-btn-outline">Protocol Submissions →</a><span style="font-size:12px;color:var(--walnut-mid);">Questions? Contact Ro Windwalker: <a href="mailto:irb@uark.edu" style="color:#993C1D;">irb@uark.edu</a></span></div></div></div>`;
+    }
+
+    // Exit conditions
+    if (stage.exit) {
+      html += `<div class="full-col"><div class="exit-box"><div class="exit-title">You're ready to move on when...</div><ul class="exit-list">${stage.exit.map(e=>`<li>${e}</li>`).join('')}</ul></div></div>`;
+    }
+
+    // Reflection
+    html += `<div class="full-col reflection-box"><div class="reflection-label">${stage.reflection.label}</div><div class="reflection-hint">${stage.reflection.hint}</div><textarea class="reflection-input" placeholder="${stage.reflection.placeholder}"></textarea></div>`;
+
+    html += `</div></div></div></div>`;
+  });
+
+  // Output stem
+  const stemClass = currentTrack === 'research' ? 'research' : currentTrack === 'internship' ? 'internship' : 'project';
+  const outputLabels = {
+    research: {title:'Contribution to knowledge', sub:'What the funnel is ultimately working toward'},
+    internship: {title:'Your thesis', sub:'Experience + analysis + reflection = contribution'},
+    project: {title:'Your contribution', sub:'A real argument grounded in research'}
+  };
+  const ol = outputLabels[currentTrack];
+  html += `<div class="output-stem"><div class="stem-line-long stem-line-${stemClass}"></div><div class="output-card output-card-${stemClass}"><div class="output-card-title">${ol.title}</div><div class="output-card-sub">${ol.sub}</div></div></div>`;
+
+  // Summary
+  const totalItems = currentStageSizes.reduce((a,b)=>a+b, 0);
+  html += `<div class="summary-section"><h2>Your snapshot</h2><p class="summary-sub">Based on what you've checked off — here's where you stand.</p>
+  <div class="summary-grid">
+    <div class="summary-stat"><div class="stat-num" id="statChecked">0</div><div class="stat-label">items confirmed</div></div>
+    <div class="summary-stat"><div class="stat-num" id="statStages">0/${currentStages.length}</div><div class="stat-label">stages with progress</div></div>
+    <div class="summary-stat"><div class="stat-num" id="statPct">0%</div><div class="stat-label">overall readiness</div></div>
+  </div>
+  <div class="next-steps-title">Suggested next steps</div>
+  <div class="next-steps-list" id="nextStepsList"><div class="next-step-item"><div class="next-step-bullet"></div><span>Open your focus stage and work through the self-check items honestly.</span></div></div>
+  <div class="advisor-note">Developed for honors undergraduate students at the Sam M. Walton College of Business, University of Arkansas, working with Professor Sarah Grace.</div>
+  <div class="print-btn-wrap"><button class="print-btn" onclick="printAssessment()">↓ &nbsp; Save or print as PDF to share with Professor Grace</button></div>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+// ── TOGGLE & PROGRESS ──────────────────────────────────────────────────
+function toggleCard(i) {
+  const card = document.getElementById('card-'+i);
+  if (card) card.classList.toggle('open');
+}
+
+function updateProgress() {
+  const all = document.querySelectorAll('input[type="checkbox"]');
+  let checked = 0;
+  const stageChecked = new Array(currentStages.length).fill(0);
+  let offset = 0;
+  currentStageSizes.forEach((size, si) => {
+    for (let j = 0; j < size; j++) {
+      if (all[offset+j] && all[offset+j].checked) { checked++; stageChecked[si]++; }
+    }
+    offset += size;
+  });
+
+  const total = currentStageSizes.reduce((a,b)=>a+b,0);
+  const pct = Math.round((checked/total)*100);
+  const pf = document.getElementById('progressFill');
+  const pc = document.getElementById('progressCount');
+  const sc = document.getElementById('statChecked');
+  const ss = document.getElementById('statStages');
+  const sp = document.getElementById('statPct');
+  if (pf) pf.style.width = pct+'%';
+  if (pc) pc.textContent = checked+' of '+total+' completed';
+  if (sc) sc.textContent = checked;
+  if (ss) ss.textContent = stageChecked.filter(n=>n>0).length+'/'+currentStages.length;
+  if (sp) sp.textContent = pct+'%';
+
+  stageChecked.forEach((n, i) => {
+    const badge = document.getElementById('badge-'+i);
+    const card = document.getElementById('card-'+i);
+    if (!badge || !card) return;
+    const max = currentStageSizes[i];
+    if (n === 0) { badge.textContent = '—'; card.classList.remove('complete'); }
+    else if (n < max) { badge.textContent = 'in progress'; card.classList.remove('complete'); }
+    else { badge.textContent = '✓ ready'; card.classList.add('complete'); }
+  });
+
+  // Dynamic next steps
+  const steps = [];
+  const firstIncomplete = stageChecked.findIndex((n,i) => n < currentStageSizes[i]);
+  if (firstIncomplete >= 0) {
+    steps.push('Your most immediate focus: <strong style="color:#c9ab5a;font-weight:500">'+currentStages[firstIncomplete].name+'</strong> — open it and work through the items you haven\'t checked off yet.');
+  }
+  if (currentTrack === 'research') {
+    if (stageChecked[0] === 3 && stageChecked[1] < 3) steps.push('You have a clear phenomenon. Now dig into the literature — Google Scholar, the UA Library, and NotebookLM are your starting point. Remember: Stages 1 and 2 work in a loop.');
+    if (stageChecked[1] === 3 && stageChecked[2] < 4) steps.push('Your lit review is taking shape. A research question should be starting to emerge from the gaps you\'ve found. Try drafting one in Stage 3 — even rough — and bring it to your next advising meeting.');
+    if (stageChecked[2] === 4 && stageChecked[3] < 3) steps.push('You have a research question. Look at what theoretical frameworks appear most in your most useful papers. Discuss the theory with Professor Grace before committing.');
+    if (stageChecked[3] === 3 && stageChecked[4] < 3) steps.push('Theory is settled. Now let your research question drive your method choice. Discuss feasibility and IRB with Professor Grace early — before you collect any data.');
+  }
+  if (checked === total) steps.push('You\'ve worked through all stages. Bring your reflection notes to your next advising meeting — you\'re well prepared.');
+  if (steps.length === 0) steps.push('Open your focus stage and work through the self-check items honestly.');
+
+  const nl = document.getElementById('nextStepsList');
+  if (nl) nl.innerHTML = steps.map(s=>`<div class="next-step-item"><div class="next-step-bullet"></div><span>${s}</span></div>`).join('');
+}
+
+function printAssessment() {
+  for (let i = 0; i < currentStages.length; i++) {
+    const c = document.getElementById('card-'+i);
+    if (c) c.classList.add('open');
+  }
+  setTimeout(() => window.print(), 200);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  initOnboarding();
+});
+</script>
+</body>
+</html>
