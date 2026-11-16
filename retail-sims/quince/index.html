@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quince Friday Simulation (Claude pilot)</title>
+<title>Quince Friday Simulation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -186,7 +186,7 @@ body.classmode .lede{max-width:none}
 
 <header class="bar">
   <div>
-    <div class="course">MKTG 44303 · Friday Simulation · Claude pilot</div>
+    <div class="course">MKTG 44303 · Friday Simulation</div>
     <div class="case" id="caseTitle"></div>
   </div>
   <div class="meta">
@@ -783,7 +783,6 @@ function vSetup(){
       <div><label for="members">Group members <span class="hint">one per line, first name and last initial</span></label><textarea id="members" data-bind="members" rows="4">${esc(S.members.join("\n"))}</textarea></div>
     `}
     <div class="row"><button class="btn" data-gate="setup" id="startBtn" type="button">Start the ${sessionMin()}-minute clock</button><span class="gate" data-gatemsg="setup"></span></div>
-    <p class="banner"><b>Claude pilot.</b> In this version, Claude voices the stakeholders, answers your questions and reads your reasoning. A free Claude account works, and only the person at the laptop needs to sign in. The first time Claude responds, claude.ai asks for permission: choose Allow. Your choices still drive the ripple; your reasoning can nudge it a little either way. If Claude stops responding (say, the account hits its usage limit), the sim switches to prepared answers so you can keep going, or another group member can sign in.</p>
     <p class="banner">Facts tagged <span class="tag real">Reported</span> come from the sources in the case guide. Facts tagged <span class="tag scen">Scenario</span> are part of the exercise.</p>
   </section>`;
 }
@@ -1233,16 +1232,13 @@ document.addEventListener("click", e=>{
   }
 });
 /* =========================================================
-   CLAUDE-CONNECTED LAYER (pilot)
+   CLAUDE-CONNECTED LAYER (disabled in this static version)
    Everything below lights up only when the page runs inside claude.ai
    for a signed-in viewer. It uses only what a free Claude account can do:
    asking Claude and downloading files. Nothing is stored in the artifact. Without it, the sim behaves like the static version.
    ========================================================= */
 const LIVE = {ai:null, dl:null, denied:false};
-const capUse = name => (window.claude && typeof window.claude.use === "function") ? window.claude.use(name).catch(()=>null) : Promise.resolve(null);
-capUse("sample").then(s => { LIVE.ai = s; render(); });
-capUse("downloads").then(d => { LIVE.dl = d; });
-const aiOn = () => !!LIVE.ai && !LIVE.denied;
+const aiOn = () => false; // static version: prepared stakeholder answers only
 
 async function ask(prompt, tier="quick"){
   if(!aiOn()) return null;
