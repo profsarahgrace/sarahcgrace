@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quince Friday Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a working case room. Left = the current step; right = the loop, always visible, so every choice shows its ripple. */
+:root{
+  --red:#9D2235; --red-dk:#7A1A28; --blossom:#F3D8DC; --rose:#FCF4F5;
+  --bg:#FAF7F7; --surface:#FFFFFF; --ink:#1E191A; --muted:#625659; --line:#E5D6D8;
+  --good:#2F7A5F; --down:#B4501A; --good-bg:#E4F2EC; --down-bg:#FBEBE1;
+  --display:"Playfair Display", Georgia, serif;
+  --body:"DM Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono:"DM Mono", ui-monospace, Menlo, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --red:#E06A82; --red-dk:#F08DA0; --blossom:#3A2228; --rose:#241A1C;
+    --bg:#151112; --surface:#1E1819; --ink:#F2EBEC; --muted:#B5A7AA; --line:#3A2F31;
+    --good:#6CC6A0; --down:#F0985E; --good-bg:#1C3029; --down-bg:#3A2619;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --red:#E06A82; --red-dk:#F08DA0; --blossom:#3A2228; --rose:#241A1C;
+  --bg:#151112; --surface:#1E1819; --ink:#F2EBEC; --muted:#B5A7AA; --line:#3A2F31;
+  --good:#6CC6A0; --down:#F0985E; --good-bg:#1C3029; --down-bg:#3A2619;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h2{font-size:1.65rem}
+h3{font-size:1.15rem}
+p{margin:0}
+button{font:inherit}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* top bar */
+.bar{background:var(--red-dk);color:#fff;padding:10px 20px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+:root[data-theme="dark"] .bar{background:#4A1520}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bar{background:#4A1520}}
+.bar .course{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.bar .case{font-family:var(--display);font-size:1.25rem}
+.bar .meta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.clock{font-family:var(--mono);font-size:1.35rem;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.12);padding:2px 10px;border-radius:6px}
+.clock.late{background:#F4BFC6;color:#5a0f1c}
+.chipbtn{background:transparent;border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.85rem}
+.chipbtn:hover{background:rgba(255,255,255,.12)}
+
+/* stepper */
+.steps{display:flex;gap:4px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--line);overflow-x:auto}
+.step{flex:1 0 auto;min-width:84px;font-size:.78rem;color:var(--muted);padding:6px 4px 4px;border-top:3px solid var(--line);white-space:nowrap}
+.step b{display:block;font-family:var(--mono);font-weight:500;font-size:.72rem}
+.step.done{border-top-color:var(--red);color:var(--ink)}
+.step.now{border-top-color:var(--red);color:var(--red);font-weight:700}
+
+.wrap{max-width:1180px;margin:0 auto;padding:22px 20px 60px;display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:24px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+.main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.side{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:900px){.side{position:static}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+.eyebrow{font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--red);font-weight:700}
+.lede{color:var(--muted);max-width:68ch}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.target{font-family:var(--mono);font-size:.8rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+
+.memo{border-left:4px solid var(--red);background:var(--rose);padding:14px 16px;border-radius:0 8px 8px 0}
+.memo .from{font-size:.82rem;color:var(--muted);margin-bottom:6px}
+.facts{counter-reset:f;list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.facts li{counter-increment:f;display:grid;grid-template-columns:30px 1fr;gap:8px;padding:9px 10px;border-radius:6px}
+.facts li:nth-child(odd){background:var(--rose)}
+.facts li::before{content:counter(f);font-family:var(--mono);color:var(--red);font-weight:500}
+.tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:1px}
+.tag.real{background:var(--good-bg);color:var(--good)}
+.tag.scen{background:var(--blossom);color:var(--red-dk)}
+
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+.opt:hover{border-color:var(--red)}
+.opt.sel{border-color:var(--red);background:var(--rose)}
+.opt .k{font-family:var(--mono);color:var(--red);font-size:.8rem}
+.opt strong{font-size:1rem}
+.opt span{font-size:.9rem;color:var(--muted)}
+.opt[disabled]{cursor:default}
+
+label{font-weight:700;font-size:.92rem;display:block;margin-bottom:4px}
+.hint{font-weight:400;color:var(--muted);font-size:.84rem}
+textarea,input[type=text],select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+textarea{min-height:76px;resize:vertical}
+textarea:focus,input:focus,select:focus{border-color:var(--red);outline:none;box-shadow:0 0 0 3px var(--blossom)}
+.count{font-family:var(--mono);font-size:.74rem;color:var(--muted);text-align:right}
+.count.ok{color:var(--good)}
+
+.btn{background:var(--red);color:#fff;border:0;border-radius:8px;padding:11px 18px;font-weight:700;cursor:pointer}
+:root[data-theme="dark"] .btn{color:#1a0d10}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{color:#1a0d10}}
+.btn:hover{filter:brightness(1.08)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{background:transparent;color:var(--red);border:1px solid var(--red)}
+.gate{font-size:.85rem;color:var(--muted)}
+
+/* quiz */
+.q{border:1px solid var(--line);border-radius:10px;padding:14px}
+.q .qopts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.q button.a{text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;color:var(--ink)}
+.q button.a:hover:not([disabled]){border-color:var(--red)}
+.q button.a.right{background:var(--good-bg);border-color:var(--good)}
+.q button.a.wrong{background:var(--down-bg);border-color:var(--down)}
+.q button.a[disabled]{cursor:default}
+.why{margin-top:8px;font-size:.9rem;color:var(--muted)}
+.why b{color:var(--ink)}
+
+/* ripple */
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.d{font-family:var(--mono);font-size:.82rem;padding:1px 7px;border-radius:999px;font-variant-numeric:tabular-nums}
+.d.up{background:var(--good-bg);color:var(--good)}
+.d.dn{background:var(--down-bg);color:var(--down)}
+.d.zero{color:var(--muted)}
+.voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.voice{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg)}
+.voice .who{font-weight:700;font-size:.9rem}
+.voice .role{font-size:.78rem;color:var(--muted);margin-bottom:6px}
+.voice p{font-size:.94rem}
+.ai-note{font-size:.78rem;color:var(--muted)}
+.thinking{color:var(--muted);font-style:italic}
+.chat{display:flex;flex-direction:column;gap:8px}
+.chat .m{padding:9px 12px;border-radius:8px;max-width:90%}
+.chat .m.us{background:var(--blossom);align-self:flex-end}
+.chat .m.them{background:var(--bg);border:1px solid var(--line)}
+.callout{background:var(--blossom);border-radius:8px;padding:12px 14px;font-size:.94rem}
+
+/* side loop */
+.loopcard h3{font-size:1rem;font-family:var(--body);font-weight:700}
+.loopcard svg{width:100%;height:auto;display:block}
+.meter{display:flex;flex-direction:column;gap:4px}
+.meter .lab{display:flex;justify-content:space-between;font-size:.84rem}
+.meter .lab .v{font-family:var(--mono)}
+.track{height:8px;background:var(--line);border-radius:999px;overflow:hidden}
+.fill{height:100%;background:var(--red);border-radius:999px}
+.attrib{font-size:.68rem;color:var(--muted);line-height:1.35}
+
+/* drawer */
+.drawer{position:fixed;inset:0 0 0 auto;width:min(560px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:-12px 0 30px rgba(0,0,0,.15);padding:22px;overflow-y:auto;z-index:20;display:none}
+.drawer.open{display:block}
+.drawer h4{font-family:var(--body);font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;color:var(--red);margin:18px 0 6px}
+.drawer ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.drawer a{color:var(--red)}
+.scrim{position:fixed;inset:0;background:rgba(20,10,12,.35);z-index:19;display:none}
+.scrim.open{display:block}
+
+.dialog{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:30;background:rgba(20,10,12,.4);padding:16px}
+.dialog.open{display:flex}
+.dialog .card{max-width:440px}
+
+pre.log{white-space:pre-wrap;font-family:var(--mono);font-size:.8rem;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;max-height:420px;overflow:auto}
+.banner{font-size:.85rem;background:var(--blossom);color:var(--ink);border-radius:8px;padding:10px 14px}
+.member{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.member.absent{opacity:.55}
+.foot{max-width:1180px;margin:0 auto;padding:0 20px 30px;font-size:.78rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}
+.foot a{color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.barrow{display:grid;grid-template-columns:180px 1fr 40px;gap:10px;align-items:center;font-size:.9rem}
+.barrow .track{height:14px}
+.barrow .n{font-family:var(--mono);text-align:right}
+@media (max-width:500px){.barrow{grid-template-columns:110px 1fr 30px}}
+body.classmode{font-size:18px}
+body.classmode .lede{max-width:none}
+.btn.askq{text-align:left;font-weight:500;padding:8px 12px}
+.pill{font-size:.75rem;border-radius:999px;padding:1px 8px;background:var(--rose);border:1px solid var(--line);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div>
+    <div class="course">MKTG 44303 · Friday Simulation</div>
+    <div class="case" id="caseTitle"></div>
+  </div>
+  <div class="meta">
+    <span id="groupLabel" class="pill" style="background:rgba(255,255,255,.12);color:#fff;border-color:transparent"></span>
+    <span class="clock" id="clock" aria-live="off" title="Time left in class">50:00</span>
+    <button class="chipbtn" id="pauseBtn" type="button">Pause</button>
+    <button class="chipbtn" id="guideBtn" type="button">Case guide</button>
+  </div>
+</header>
+<nav class="steps" id="steps" aria-label="Simulation steps"></nav>
+
+<div class="wrap">
+  <main class="main" id="main"></main>
+  <aside class="side">
+    <section class="card loopcard">
+      <div class="row" style="justify-content:space-between">
+        <h3 id="loopTitle">The loop</h3>
+        <span class="pill" id="loopNote">Starting point</span>
+      </div>
+      <p class="hint" id="loopCaseNote" hidden style="margin:4px 0 0"></p>
+      <div id="loopSvg"></div>
+      <div class="stack" style="gap:10px;margin-top:6px">
+        <div class="meter"><div class="lab"><span id="hLab"></span><span class="v" id="hVal"></span></div><div class="track"><div class="fill" id="hFill"></div></div></div>
+        <div class="meter" id="sMeter"><div class="lab"><span id="sLab"></span><span class="v" id="sVal"></span></div><div class="track"><div class="fill" id="sFill"></div></div></div>
+      </div>
+      <p class="attrib" style="margin-top:12px">Scores are simulation values, not company data. Loop adapted from Opresnik, Hollensen &amp; Kotler, "Leading with purpose: the PIVOTAL Infinity Marketing Canvas," Strategy &amp; Leadership. PIVOTAL Infinity Marketing Canvas® is a registered mark of Marc Oliver Opresnik.</p>
+    </section>
+  </aside>
+</div>
+
+<footer class="foot">
+  <span id="footNote"></span>
+  <span class="row" style="gap:14px">
+    <a href="#" id="restartLink">Restart simulation</a>
+  </span>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Case guide recap"></aside>
+
+<div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+  <div class="card stack">
+    <h3 id="dlgTitle">Restart the simulation?</h3>
+    <p class="lede">This clears your group's answers on this laptop.</p>
+    <div class="row"><button class="btn" id="dlgYes" type="button">Restart</button><button class="btn ghost" id="dlgNo" type="button">Keep going</button></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CASE CONTENT — swap this block to build another week's sim
+   ========================================================= */
+const CASE = {
+  id: "quince",
+  modes: ["group"],
+  retailer: "Quince",
+  title: "Quince: The Designers Strike Back",
+  bigQuestion: "What happens when accessibility requires compromise? Can affordability and ethics coexist?",
+  role: "You are consultants to a collective of five independent knitwear designers whose work keeps showing up in Quince's catalog.",
+  boardName: "the collective",
+  loopNote: "This is Quince's loop. Your moves are aimed at it, so a drop means pressure landed on that stage.",
+  text: {
+    firstStage: "Which stage of Quince's loop does this hit first?",
+    fit: "Does it protect the designers' brand, their premium and their creative integrity?",
+    stake: "Who benefits, and who bears the cost? Think of the five studios, their customers, Quince's customers and Quince.",
+    risk: "What could go wrong, and what would have to be true for it to work?",
+    rec: "Lead with the position. Say what the collective should do, why it fits their brand and who pays for it.",
+    rippleQ: "In one sentence, as a group: what did this decision do to Quince's Advocacy and Lifetime Value?",
+    rippleHint: "Quince's, not the designers'. Advocacy is who still vouches for Quince; Lifetime Value is whether Quince's customers keep coming back."
+  },
+  meters: {
+    health: {label:"Collective's cash", hint:"what the five studios can spend before spring"},
+    supply: {label:"Designers' premium", hint:"can they still charge $180 to $400"}
+  },
+  healthWarning: "two studios say they can't fund their spring collections",
+  outcomeHealth: [
+    "Money got tight: two of the five studios cut their spring collections, and the collective's next fight would have to be cheaper.",
+    "Cash dipped but held. Every studio made it to spring, with less room for the next surprise.",
+    "Cash held, which gave the collective room to choose its next move instead of reacting."
+  ],
+  boardChallenges: [
+    {ifMissing:["brand","customer","premium","position","price","story","loyal"], q:"You've told us why this is fair. Tell us why it's smart: what does it do for our brand and for the customers who pay $250?"},
+    {ifMissing:["cost","pay","fee","money","cash","savings","afford","royalt"], q:"Who pays for this? Walk me through what it costs each of our five studios before spring."},
+    {ifMissing:["advocacy","lifetime","loyal","trust","outreach","loop"], q:"What does this do to Quince's loop, and to our own customers' loyalty a year from now?"},
+    {ifMissing:[], q:"What's the first sign, three months in, that this plan is failing, and what would we do then?"}
+  ],
+  stages: [
+    {id:"P", name:"Purpose"},{id:"I", name:"Innovation"},{id:"V", name:"Value"},
+    {id:"O", name:"Outreach"},{id:"T", name:"Transfer"},{id:"A", name:"Advocacy"},{id:"L", name:"Lifetime Value"}
+  ],
+  loopPrompts: {
+    P:"Why Quince exists, and is it structural or rhetorical?",
+    I:"What its model has led it to build",
+    V:"The benefit customers get (merchandise and price live here)",
+    O:"How the story gets out, and whether it's credible",
+    T:"Whether people actually buy, use and keep using it (the site and service live here)",
+    A:"Who chooses to vouch for the brand",
+    L:"Whether the relationship lasts"
+  },
+  baseline: {P:58, I:80, V:86, O:90, T:85, A:80, L:72, health:55, supply:70},
+  personas: {
+    nadia:  {name:"Nadia Reyes", role:"Knitwear designer, collective member (fictional)", stance:"Sales of her best-selling cardigan slowed after a Quince lookalike appeared. Angry, but needs spring to go well."},
+    ines:   {name:"Ines Moreau", role:"Designer who first launched in London (fictional)", stance:"Sells through a London boutique and U.S. stockists. Careful with money; has never been in a legal fight."},
+    theo:   {name:"Theo Park", role:"IP attorney (fictional)", stance:"Straight talker. Knows how weak U.S. fashion law is and how expensive litigation gets."},
+    lena:   {name:"Lena Ortiz", role:"Fashion reporter (fictional)", stance:"Covers the dupe economy. Interested in stories with a clear ask and a next chapter."},
+    jess:   {name:"Jess Whitfield", role:"Quince customer, 24 (fictional)", stance:"Bought Quince for the price and because it seemed more ethical than fast fashion."},
+    sam:    {name:"Sam Okafor", role:"Boutique buyer who stocks the designers (fictional)", stance:"Needs a reason for customers to pay $250 when a lookalike costs $60."},
+    board:  {name:"Mara Ellison", role:"Founder of the collective (fictional)", stance:"Has the oldest studio and the most savings at risk. Wants a plan all five can live with."}
+  },
+  recall: [
+    {q:"Quince achieves its low prices primarily by:",
+     a:["Using cheaper synthetic materials instead of natural fibers","Cutting out sourcing agents, wholesalers and retail, and shipping straight from factory to consumer","Manufacturing in large batches to drive down unit costs","Sharing fast-fashion factories with many other brands"], c:1,
+     why:"The manufacturer-to-consumer model is real and clever. Today's question is what else the low price depends on.", ref:"Monday quiz · Business model"},
+    {q:"In June 2026, the jury in Deckers (UGG) v. Quince found that:",
+     a:["Quince's boot did not resemble UGG's design","The case settled before trial","Quince must pay UGG damages","Quince's boot infringed UGG's design patent, but the patent was invalid, so Quince won"], c:3,
+     why:"A finding of close similarity didn't help UGG. Keep that in mind when the designers weigh a lawsuit today.", ref:"Wednesday quiz · The legal record"},
+    {q:"When journalists asked Quince for factory names and audits, Quince said sharing them would:",
+     a:["Violate its factory partners' privacy","Conflict with its BSCI certification","Divulge competitive advantages","Confuse customers"], c:2,
+     why:"Quince treats disclosure as a competitive cost. That gap between claims and proof is where its loop is weakest.", ref:"Wednesday quiz · Critical source"},
+    {q:"Eco-Stylist gave Quince zero of 14 points in which category?",
+     a:["Environmental impact","Animal welfare","Supply chain transparency","Sustainable materials"], c:2,
+     why:"A brand that talks about transparency scored zero on it, because evaluators look for factory-level disclosure.", ref:"Wednesday quiz · Critical source"},
+    {q:"Brands like White + Warren answered Quince with “dupe-proof” products: unique details that are hard to copy. That's:",
+     a:["Price competition","Brand identity deepening as differentiation","Legal action to enforce IP","Leaving the premium basics market"], c:1,
+     why:"When the law offers little protection, brands compete on identity. Option D today is the designers' version of this.", ref:"Wednesday quiz · Marketing"},
+    {q:"Quince's TikTok story and cost breakdowns are strong, but its factory claims aren't verified. On the loop, that's:",
+     a:["Strong purpose, weak transfer","Outreach ahead of proof","Innovation without advocacy","A loop with no Purpose"], c:1,
+     why:"Outreach runs ahead of what Quince can prove. That's this week's spotlight, and the stage your moves can press on.", ref:"PIVOTAL handout"}
+  ],
+  decisions: [
+    {
+      id:"d1", label:"Decision 1",
+      title:"Five designers, copied. What do they do?",
+      guideRef:"Wednesday Shock 1 (the dupe model on trial) and your prep question on the strongest argument for Quince.",
+      from:"The collective · eight weeks before spring launch",
+      memo:"Over 18 months, each of the five designers has watched an original design appear in Quince's catalog at a fraction of the price, often within months of their own launch: same silhouettes, stitch patterns and signature details. Customers send side-by-side screenshots asking if they partnered with Quince. The collective wants one coordinated plan.",
+      facts:[
+        {t:"U.S. law gives clothing shapes and cuts little protection. In June 2026, a jury found Quince's mini boot infringed UGG's design patent, then ruled the patent invalid, so Quince won.", real:true},
+        {t:"Three of the five designers have distinctive embroidered details or print motifs, which copyright can protect as original artwork. That's a different right from the design patent UGG lost on.", real:false},
+        {t:"The designers have about 180,000 Instagram followers between them and strong credibility in independent fashion. Their pieces sell for $180 to $400; Quince's lookalikes sell for $45 to $80.", real:false},
+        {t:"Quince passed $2 billion in trailing-12-month sales in July 2026 and is valued at $10.1 billion. Any settlement would be a rounding error for Quince; legal fees would not be for the designers.", real:true},
+        {t:"Quince's social presence is built on a “real people discovering quality” narrative. Its trust is high, and highly exposed to a credible counter-story.", real:false},
+        {t:"Two of the five designers have turned down licensing offers from fast-fashion brands before. One has since reconsidered.", real:false},
+        {t:"Quince is building in-house design teams and original content to move past its “dupe” reputation (Fast Company, March 2026).", real:true},
+        {t:"When one designer reached out, Quince replied that its team “draws inspiration from global trends, as all designers do.” Some Quince customers who've seen the side-by-sides say they bought Quince because they thought it was the ethical choice.", real:false}
+      ],
+      options:[
+        {id:"A", name:"Public callout", desc:"A coordinated campaign: side-by-side comparisons, personal statements from each designer, a clear ask for credit and pay, and outreach to fashion press.",
+         fx:{P:-3,I:0,V:0,O:-5,T:0,A:-5,L:-2,health:-2,supply:2},
+         story:"The side-by-sides spread fast in independent fashion, and two outlets pick them up. Quince stays silent. Some Quince customers say they feel misled; others call the designers bitter. The designers' followers rally, but the spring launch is now a story about Quince.",
+         later:"The callout made the designers known as the people who took on Quince, which helped and hurt in about equal measure.",
+         voices:{nadia:"It felt good to stop staying quiet. But my DMs are half support, half people calling me jealous. I need spring to be about my work, not theirs.",
+                 theo:"Careful with the wording. Show the side-by-sides and let people decide. Calling it theft as a statement of fact is how you get a letter from their lawyers.",
+                 lena:"Side-by-sides are a strong story. My editor's question is what happens next. If there's no ask, it's a one-day story.",
+                 jess:"I bought Quince because I thought it was the ethical choice. Seeing those photos, I'm not sure what I paid for."}},
+        {id:"B", name:"Legal action", desc:"The three designers with protectable embroidery and prints file copyright claims. The other two support them.",
+         fx:{P:-2,I:-4,V:0,O:-2,T:0,A:-2,L:0,health:-8,supply:1},
+         story:"The three designers file copyright claims on their embroidery and prints, and Quince's lawyers answer within weeks. Fees eat into spring production money, and the case could take years. But the filing gets Quince's attention in a way posts never did, and its counsel asks whether there's a path to settle.",
+         later:"The lawsuit gave the designers leverage and a legal bill, and both lasted longer than they expected.",
+         voices:{nadia:"I'm not even in the suit, because silhouettes aren't protected. It feels like the collective split in half overnight.",
+                 theo:"The motifs are your strongest ground: that's artwork, not a shape. Expect a long timeline. The real value of filing is that it makes a settlement or a license possible.",
+                 lena:"Five small studios against a ten-billion-dollar company is a headline. A lawsuit that drags on for two years is not.",
+                 jess:"Honestly, I didn't hear about the lawsuit. Nobody I follow posted about it."}},
+        {id:"C", name:"License and collaborate", desc:"Approach Quince directly: license designs for a lower-priced version in exchange for royalties and “designed with” credit.",
+         fx:{P:2,I:3,V:2,O:2,T:0,A:1,L:0,health:6,supply:-6},
+         story:"Quince takes the meeting and agrees to a small licensed capsule with credit and royalties. The money funds two studios' spring collections. But some boutique buyers and longtime customers read the credit line as the designers endorsing the brand that copied them, and full-price sales slow.",
+         later:"Licensing paid the bills and put the designers' names on Quince, which their premium customers never quite forgot.",
+         voices:{nadia:"The royalty check covers my spring yarn order. But one of my stockists asked me, kindly, why she should carry me at $280 when I'm at Quince for $70.",
+                 theo:"Read the contract twice. Who owns new designs? Can they make “inspired by” versions without paying? The royalty rate matters less than those clauses.",
+                 lena:"“Copied designers partner with Quince” is a good-news story for Quince. I'm not sure it's a good-news story for you.",
+                 jess:"Oh, nice, a collab. I'd buy that. I'd probably never buy the $300 version, though."}},
+        {id:"D", name:"Out-design them", desc:"Make the spring work hard to copy: hand-finished details, named makers, small numbered runs and the story behind each piece.",
+         fx:{P:0,I:-1,V:0,O:0,T:0,A:0,L:0,health:-3,supply:6},
+         story:"The collective puts its money into what Quince can't easily copy: hand-finishing, named makers, numbered runs and the story behind each piece. Costs and spring prices rise. Quince's lookalikes stay up, but the designers stop competing on silhouette and start competing on who made it.",
+         later:"The designers stopped fighting over copies and made work that was harder to copy, at a higher cost, for a smaller and more loyal audience.",
+         voices:{nadia:"It's the most “me” option. It also means my sweater costs more to make, and I'm already at $280.",
+                 theo:"Nothing here creates legal risk for you, and the new details may be protectable artwork. Document every design date now.",
+                 lena:"“Designers respond by going deeper” is a quieter story. Quieter stories don't go viral, but they last.",
+                 jess:"If I knew who made it and why it costs that much, maybe I'd save up for one. Maybe."}}
+      ],
+      asks:{
+        theo:[["Can we actually win a case?","On the embroidery and prints, maybe: those are artwork, which copyright protects. On silhouettes and cuts, almost certainly not. U.S. law gives clothing shapes very little protection, and UGG's design patent didn't survive its own trial."],
+              ["What would a lawsuit cost us?","More than most small studios have: years of fees before anyone talks settlement. Some lawyers take IP cases for a share of the winnings, but only when the damages are large. Yours probably aren't."],
+              ["Is a public callout legally risky?","It can be. Showing side-by-side photos and letting people judge is generally safer. Saying “Quince stole this” as a fact invites a defamation letter. Choose your words carefully."]],
+        lena:[["Will the press care?","A collective of five designers with side-by-sides and real sales losses is a story. One upset designer is not. The coordinated angle is what makes it news."],
+              ["What makes a callout work?","A clear ask. “Credit us and pay us” gives readers something to watch for. “This is wrong” gives them a day of outrage and nothing after."],
+              ["How does Quince usually respond?","Publicly, it says its designers draw inspiration from global trends. It keeps winning in court, so it has little reason to say more."]],
+        jess:[["Why did you buy Quince?","Price first. But I also thought it was the better choice: not fast fashion, nicer materials, fair factories. That second part is what's bugging me now."],
+              ["Would you stop buying Quince?","Probably not completely. I'd feel weirder about it, and I'd want to know which pieces were original."],
+              ["Would you pay $250 for a designer piece?","Not often. Maybe for one piece I'd keep forever, if I knew the person who made it."]],
+        sam:[["What do you need from the designers?","A reason my customers will pay $250 when a lookalike costs $60: story, finish, scarcity. The copies make that harder, not impossible."],
+             ["Would a Quince license hurt you?","Yes. If the same design is at Quince with the designer's name on it, my customer has no reason to buy it from me."],
+             ["Does a public fight help you?","A little, if it makes my customers proud to buy the original. It hurts if it becomes drama that follows the brand around."]]
+      }
+    },
+    {
+      id:"d2", label:"Decision 2 · Strategy shock", shock:true,
+      title:"Quince goes original, and goes to the UK.",
+      guideRef:"Wednesday Shock 1 (“why winning isn't enough”: refiled claims and the UK) and the PESTLE legal row.",
+      dynamic:{
+        A:"Your callout is still circulating, and fashion press wants your reaction to Quince's UK launch.",
+        B:"Your copyright claim is pending. Quince's email came through its lawyers, copied to your attorney.",
+        C:"You already license one capsule to Quince. This email proposes switching future work to flat fees, with Quince owning the designs.",
+        D:"Your hand-finished spring line is in production and costs more to make than planned."
+      },
+      from:"The collective · three weeks later",
+      memo:"Two things happened in the same week. Quince opened its UK site, and a near-identical version of one member's cardigan is in the launch assortment. Then Quince's new original-design team emailed the collective about “working with independent designers”: a flat fee per design and a “designed with” credit on a small capsule. No royalties. You need to decide how to respond.",
+      facts:[
+        {t:"Quince launched its UK site on October 19, 2026.", real:true},
+        {t:"UK unregistered design right protects a product's shape for up to 10 years after it's first sold, and supplementary unregistered design covers overall appearance for 3 years. The U.S. has nothing comparable for clothing. Who qualifies depends on where and by whom a design was first shown.", real:true},
+        {t:"Since April 2025, the UK's Competition and Markets Authority can fine companies up to 10% of global turnover for claims they can't back up.", real:true},
+        {t:"Williams-Sonoma's ad claims and a shopper class action over Quince's pricing were both dismissed in fall 2026 with leave to amend, so both can be refiled.", real:true},
+        {t:"Three record labels sued Quince in April 2026 over unlicensed music in its TikTok and Instagram videos. The case is pending.", real:true},
+        {t:"Ines Moreau first launched the copied cardigan at a London boutique, before selling it in the U.S.", real:false},
+        {t:"Quince's offer: $15,000 per design, a “designed with” credit, and Quince owns the capsule designs outright.", real:false},
+        {t:"DYNAMIC", real:false}
+      ],
+      options:[
+        {id:"A", name:"Enforce in the UK", desc:"Ines sends Quince a UK design-right claim over the cardigan. The other four hold their fire.",
+         fx:{P:-1,I:-3,V:0,O:-2,T:-2,A:-1,L:0,health:-4,supply:2},
+         story:"Ines's UK lawyer sends the claim with dated launch photos and the boutique's order records. Quince's UK team pulls the cardigan while it reviews. It's one design, not five, but the collective now has proof that the law somewhere takes their work seriously, and the fee is far smaller than a U.S. lawsuit.",
+         later:"The UK claim showed the designers had legal ground somewhere, even if only for the work that qualified.",
+         voices:{ines:"For once the law might actually be on my side. I'm nervous, though. I've never sent a legal letter in my life.",
+                 theo:"UK design right is your best legal ground yet, but only for Ines, and only if she can prove where and when it was first shown. Gather the receipts.",
+                 sam:"If the UK claim works, I'd love to tell customers the original is protected. That's a selling point.",
+                 lena:"“UK law protects what U.S. law won't” is a sharper story than another lookalike post."}},
+        {id:"B", name:"Negotiate from leverage", desc:"Take the meeting, but counter: royalties instead of a flat fee, the designers keep ownership, and the current lookalikes come down.",
+         fx:{P:1,I:2,V:0,O:1,T:0,A:0,L:0,health:4,supply:-2},
+         story:"Quince's team takes the counteroffer seriously. After two rounds, it agrees to a small royalty and to pull two lookalikes, but it won't remove the rest. The deal is better than the first offer and worse than the designers hoped. Every studio has to decide whether its name goes on the capsule.",
+         later:"The negotiated deal was better than Quince's first offer, and the designers had to live with what it didn't fix.",
+         voices:{ines:"I'll sit down with them, but not for a one-time fee. If they want our designs, they pay every time they sell them.",
+                 theo:"Get royalties, approval rights and the removal of the current lookalikes in writing. A credit line without control is just advertising for them.",
+                 sam:"If you do a deal, keep the Quince pieces clearly different from what I sell. Otherwise I can't hold your price.",
+                 lena:"Negotiating isn't a story until it's signed. Then it's a big one, either way."}},
+        {id:"C", name:"Take the offer", desc:"Accept the flat fee and credit. Use the money to fund spring.",
+         fx:{P:2,I:3,V:1,O:3,T:0,A:1,L:0,health:6,supply:-6},
+         story:"The fees land within a month and every studio's spring is funded. Quince announces the capsule as proof it now works with independent designers. The designers' names are on $60 sweaters, Quince owns the designs, and two boutique buyers quietly reduce their spring orders.",
+         later:"The fees funded spring, and Quince used the designers' names to show it had moved past copying.",
+         voices:{ines:"Fifteen thousand dollars would pay for my whole spring run. It's hard to say no to that, even knowing what it costs us later.",
+                 theo:"Flat fee, and Quince owns the designs: that's a sale, not a license. They can make every variation forever without paying you again.",
+                 sam:"I'll be honest: if your name is on a $60 Quince sweater, I can't keep you at $250.",
+                 lena:"“Quince pays the designers it copied” makes Quince look good. Readers will ask what you got."}},
+        {id:"D", name:"Say no and launch", desc:"Decline the offer and put everything into the spring launch.",
+         fx:{P:0,I:0,V:0,O:0,T:0,A:0,L:0,health:-2,supply:3},
+         story:"The collective declines in two sentences and spends its energy on spring. Nothing changes at Quince: the lookalikes stay up, including the UK cardigan. But the launch is the collective's own story, told on its own terms, and its best customers notice.",
+         later:"Saying no kept the collective's story its own, and left Quince's catalog exactly as it was.",
+         voices:{ines:"It feels right. It also means I'm paying for spring out of savings.",
+                 theo:"Declining costs you nothing legally. Keep documenting your design dates in case you need them later.",
+                 sam:"Good. Give me the story of the original and I'll sell it.",
+                 lena:"No response is no story. That's fine, if the spring launch is the story you want told."}}
+      ],
+      asks:{
+        ines:[["Can you prove the cardigan was first shown in London?","I have the boutique's order, dated photos from the launch and the shop's posts. Whether that's enough is a question for a UK lawyer."],
+              ["What does Quince's fee mean for you?","It would cover my spring production. It would also mean selling the design outright, which I swore I'd never do."],
+              ["What do you actually want?","Credit and fairness. I'd rather be paid every time my design sells than get one check and watch it everywhere."]],
+        theo:[["What's the difference between a fee and a royalty?","A fee is paid once, and here Quince would own the design. A royalty is paid on every sale, and you usually keep ownership. On a bestseller, the difference is enormous."],
+              ["Does the UK claim help the other four?","Not directly: only designs first shown in qualifying ways are protected. But a win sets the tone, and it makes Quince more careful with the collective's work."],
+              ["Should we answer Quince's email at all?","Answering commits you to nothing. Just don't agree to anything on a call, and get every offer in writing."]],
+        sam:[["What do your customers care about?","Who made it, and that it's the real thing. They'll pay more for a story they can repeat to friends."],
+             ["Would a Quince deal end our relationship?","Not automatically. But your pieces with me would need to be clearly different, and clearly better, than anything with your name at Quince."],
+             ["What would help you sell spring?","Numbered pieces, a maker's note in every box and a launch event. Give my customers a reason to buy now."]],
+        lena:[["Is the UK angle news?","Yes. Most people don't know the same sweater can be protected in London and not in New York. That's a story about the law, not just about Quince."],
+              ["How would you cover a Quince deal?","As a turn in the story. The headline depends on the terms: royalties read as respect, and a flat fee reads as a buyout."],
+              ["Does Quince care about this press?","It's opening in a new country and trying to look like a brand with original design. Bad press matters more now than it did a year ago."]]
+      },
+      combos:[
+        {when:{d1:"A", d2:"A"}, fx:{O:-2,A:-2}, note:"Your callout already put the side-by-sides in front of fashion press, so the UK claim lands as the next chapter, not a new fight."},
+        {when:{d1:"A", d2:"B"}, fx:{health:3}, note:"Public pressure is leverage. Quince's team arrives ready to talk royalties."},
+        {when:{d1:"A", d2:"C"}, fx:{supply:-4,A:1}, note:"Taking a flat fee weeks after a public callout reads as “they were just negotiating.” Your followers notice."},
+        {when:{d1:"B", d2:"A"}, fx:{health:-4,I:-2}, note:"Two legal fronts at once: strong leverage, heavy fees."},
+        {when:{d1:"B", d2:"B"}, fx:{health:4}, note:"The pending copyright claim gives your counteroffer weight, and Quince's counsel suggests folding the case into a license."},
+        {when:{d1:"C", d2:"C"}, fx:{supply:-3}, note:"You had won royalties. Switching to flat fees, with Quince owning the designs, gives that away."},
+        {when:{d1:"C", d2:"D"}, fx:{supply:-2}, note:"Saying no now, after licensing earlier, confuses buyers and followers: are you with Quince or not?"},
+        {when:{d1:"D", d2:"A"}, fx:{I:-1,supply:1}, note:"Your new hand-finished pieces are being shown in London first, so they can qualify for UK protection from day one."},
+        {when:{d1:"D", d2:"D"}, fx:{supply:3}, note:"Two decisions pointing the same way: the collective is now clearly the original, hand-finished alternative."}
+      ]
+    }
+  ],
+  board: {
+    title:"Collective meeting",
+    step:"Collective",
+    asks:"The collective will ask",
+    from:"All five designers · before spring launch",
+    memo:"The five designers meet to agree on one plan for the next 12 months, built on what happened in your two decisions. Every option costs someone in this room something."
+  },
+  exit: ["Quince's copying is probably legal. Did the class's plan depend on the law, on the designers' customers or on Quince's reputation, and which held up?", "Where would I push back on the class's final call, and why?"],
+  groupDebrief: ["Quince's copying is probably legal. Did our plan depend on the law, on the designers' customers or on Quince's reputation, and which one held up?", "Which group in the share-out chose differently, and what in their reasoning would change our call?"],
+  debrief: {
+    tension:"Legal permissibility vs. ethical responsibility. The designers likely can't win a design fight in U.S. court (UGG couldn't), but the law isn't their only lever. Each option pressed on a different part of Quince's loop: its story and the trust behind it, the cost of copying, or where the value goes. What's the most powerful move for creative professionals with limited resources against a $10 billion company?",
+    strong:["Makes a clear choice with strategic logic, not “it depends”","Names the stage of Quince's loop the plan presses on, and why Quince is exposed there","Acknowledges the strongest counterargument and answers it","Connects to the designers' brand and premium, not only to ethics"],
+    weak:["“Quince should do better” without advising the designers","Licensing as a win-win without facing what it concedes","Ethics-only framing","Ignores the facts that cut against the choice, such as legal cost and time"]
+  },
+  guide: {
+    pillars:[
+      ["Store location","Online-first DTC. Pop-ups in New York, Los Angeles and Toronto in 2026; localized sites in Canada (Jan 2026) and the UK (Oct 2026).","Avoids rent and staff; pop-ups build the brand without a store commitment."],
+      ["Merchandise","Began with the $50 cashmere sweater; now 100+ categories, from furniture to fine jewelry. Hundreds of new items weekly.","Carries the “luxury for less” halo into every category, but each adds suppliers that are harder to verify."],
+      ["Atmospherics","Minimalist digital experience; heavy influencer and creator content on TikTok and Instagram; a 2026 push into original content.","Customers' videos drive discovery and trust more cheaply than ads, and now carry legal risk."],
+      ["Customer service","Free shipping and 365-day returns; per-product cost breakdowns and “traditional retail” comparison prices.","Reduces purchase risk and signals transparency, though the stated costs are never verified."]
+    ],
+    customer:"Young professionals and Gen Z shoppers who want premium cashmere, silk and linen basics at $50 to $80 instead of $200+. They hold two beliefs at once: “I care about ethical production” and “I deserve affordable quality.” Quince's genius is presenting these as compatible.",
+    map:"Price (low to high) by ethical claims and transparency (weak to strong): Shein low and weak; Zara mid and minimal; Quince low price with strong claims; Everlane mid with strong claims; Patagonia high with the strongest claims and credentials. Quince's corner has two possible explanations: it cracked the code, or its claims outrun its model.",
+    pestle:[
+      ["Political","The Supreme Court struck down the IEEPA tariffs (Feb 2026), but other tariffs on China-made apparel remain; de minimis stays suspended."],
+      ["Economic","Gen Z spending is down and value-seeking persists. Quince passed $2B in trailing sales; a $10.1B valuation adds pressure to keep growing."],
+      ["Social","The values-action gap: shoppers say they care about ethics but choose price. “Quiet luxury” favors Quince's basics."],
+      ["Technological","TikTok creator content is Quince's growth engine, and now a legal liability (the April 2026 music suit)."],
+      ["Legal","U.S. courts keep siding with Quince, but dismissed claims can be refiled. The UK launch brings stronger design law and CMA fines for claims a brand can't prove."],
+      ["Environmental","Mongolia's 2023–24 dzud killed about 2.5 million goats and pushed raw cashmere prices up; overgrazing has degraded much of the grassland."]
+    ],
+    shocks:[
+      ["The dupe model on trial","UGG, Coach, Williams-Sonoma, record labels and shoppers have all sued. Quince keeps winning, but every case keeps “dupe” in the headlines, the UK brings stronger design law, and Quince is building original design anyway. Today's Decision 2."],
+      ["The $50 cashmere question","The dzud strained cashmere supply and raised prices, and the UK regulator can demand proof of sourcing claims. Quince taught shoppers that $50 is what cashmere costs, which makes rising costs hard to absorb or pass on."]
+    ],
+    authenticity:"The test inside Purpose. Quince's factory pages say partners “pay fair wages” but name no factories, audits or certifications; Eco-Stylist scored its transparency 0 of 14. By the course's test, its purpose is rhetorical: claimed, not built into how the company runs.",
+    zoom:"Disclosure vs. accountability. Disclosing some things while withholding verifiable evidence is a strategic choice about what customers get to know. Quince's own answer: sharing factory details “would divulge some of our competitive advantages.”",
+    questions:["Where is the loop strongest?","Where is it weakest?","What does that do to Advocacy and Lifetime Value?"],
+    leadership:["How does this protect what makes the designers' work worth $250?","Who pays for it, and can five small studios afford it?","What does it do to Quince's loop, and to the designers' own customers' loyalty?"],
+    sources:[
+      ["Quince: About us","https://www.quince.com/about-us"],
+      ["Quince: Our factories","https://www.quince.com/factories"],
+      ["Ecocult: Quince says it's ethical and sustainable. Here's why that's not true.","https://ecocult.com/quince-ethical-sustainable-greenwashing/"],
+      ["Eco-Stylist: Is Quince ethical or sustainable?","https://www.eco-stylist.com/is-quince-ethical-or-sustainable/"],
+      ["The Fashion Law: Quince win in UGG lawsuit shows the limits of anti-dupe litigation","https://www.thefashionlaw.com/quince-win-in-ugg-lawsuit-shows-the-limits-of-anti-dupe-litigation/"],
+      ["The Fashion Law: Quince nabs dismissal of lawsuit over its pricing claims","https://www.thefashionlaw.com/quince-nabs-dismissal-of-lawsuit-over-its-you-save-pricing-claims/"],
+      ["WWD via Yahoo Finance: Quince surpasses $2 billion in sales","https://finance.yahoo.com/markets/stocks/articles/quince-surpasses-2-billion-sales-164323892.html"],
+      ["FashionUnited: New UK legislation puts fashion's green claims under scrutiny","https://fashionunited.uk/news/fashion/new-uk-legislation-puts-fashions-green-claims-under-scrutiny/2025040180847"],
+      ["Business of Fashion: How brands are taking on Quince","https://www.businessoffashion.com/articles/direct-to-consumer/how-brands-can-beat-quince/"]
+    ]
+  }
+};
+
+/* =========================================================
+   ENGINE
+   ========================================================= */
+const PHASES_GROUP = [
+  {key:"setup", label:"Setup", min:2},
+  {key:"brief", label:"Briefing", min:5},
+  {key:"d1", label:"Decision 1", min:7},
+  {key:"r1", label:"Ripple", min:4},
+  {key:"d2", label:"Shock", min:7},
+  {key:"r2", label:"Ripple", min:3},
+  {key:"board", label:"Board", min:6},
+  {key:"share", label:"Share-out", min:5},
+  {key:"exit", label:"Group debrief", min:5},
+  {key:"log", label:"Wrap up", min:5}
+];
+const PHASES_CLASS = [
+  {key:"setup", label:"Setup", min:2},
+  {key:"brief", label:"Briefing", min:7},
+  {key:"d1", label:"Decision 1", min:8},
+  {key:"r1", label:"Ripple", min:4},
+  {key:"d2", label:"Shock", min:7},
+  {key:"r2", label:"Ripple", min:3},
+  {key:"board", label:"Board", min:6},
+  {key:"exit", label:"Wrap-up", min:8},
+  {key:"log", label:"Record", min:0}
+];
+function PH(){ return (S.mode === "class" ? PHASES_CLASS : PHASES_GROUP).map(p => p.key==="board" ? {...p, label:(CASE.board.step||"Board")} : p); }
+const TX = (k, d) => (CASE.text && CASE.text[k]) || d;
+const minOf = k => (PH().find(p=>p.key===k)||{}).min || 0;
+const sessionMin = () => PH().reduce((t,p)=>t+p.min,0);
+const STORE_KEY = "mktg44303-sim-" + CASE.id + "-live-v1";
+const MIN = {rip:30, fact:20, debrief:40, dissent:20, loop:8, why:40, rec:80, ripple:40, misses:25, reply:30, exit:15, share:20};
+
+function fresh(){
+  const m0 = (CASE.modes || ["group"])[0];
+  const votes = {A:"",B:"",C:"",D:""};
+  return {mode:m0, phase:0, group:"", members:[], startTs:null, pausedAt:null, pausedTotal:0,
+    recall:{answers:{}}, loop:{P:"",I:"",V:"",O:"",T:"",A:"",L:""}, strong:"", breaks:"",
+    d1:{choice:null, first:"", fit:"", stake:"", risk:"", ripple:"", locked:false, asks:[], votes:{...votes}},
+    d2:{choice:null, first:"", fit:"", stake:"", risk:"", ripple:"", locked:false, asks:[], votes:{...votes}},
+    board:{rec:"", stage:"", ripple:"", misses:"", challenge:"", reply:"", done:false},
+    strongFact:"", breaksFact:"", debrief:{q1:"", q2:"", dissent:""},
+    share:{line:"", speaker:""}, exit:{}, coach:"", submittedAt:null};
+}
+let S = Object.assign(fresh(), load() || {});
+const MODES = CASE.modes || ["group"];
+if(!MODES.includes(S.mode)) S.mode = MODES[0];
+function load(){ try{ const t = localStorage.getItem(STORE_KEY); return t ? JSON.parse(t) : null; }catch(e){ return null; } }
+let saveT = null;
+function save(){ clearTimeout(saveT); saveT = setTimeout(()=>{ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch(e){} }, 250); }
+
+const $ = (s, r=document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const stageName = id => (CASE.stages.find(s=>s.id===id)||{}).name || id;
+const opt = (d, id) => CASE.decisions[d].options.find(o=>o.id===id);
+const len = s => (s||"").trim().length;
+const isClass = () => S.mode === "class";
+const phaseKey = () => PH()[S.phase].key;
+const idxOf = key => PH().findIndex(p=>p.key===key);
+
+/* ---------- scoring ---------- */
+function compute(){
+  const cur = {...CASE.baseline};
+  const add = fx => { for(const k in fx){ cur[k] = (cur[k]||0) + fx[k]; } };
+  const snaps = [{...cur}];
+  if(S.d1.locked){ add(opt(0, S.d1.choice).fx); if(S.d1.adj) add(S.d1.adj.fx); }
+  snaps.push({...cur});
+  const combos = [];
+  if(S.d2.locked){
+    add(opt(1, S.d2.choice).fx);
+    (CASE.decisions[1].combos||[]).forEach(c => { if(c.when.d1===S.d1.choice && c.when.d2===S.d2.choice){ add(c.fx); combos.push(c); } });
+    if(S.d2.adj) add(S.d2.adj.fx);
+  }
+  snaps.push({...cur});
+  for(const sn of snaps){ for(const k in sn){ sn[k] = Math.max(0, Math.min(100, sn[k])); } }
+  return {base:snaps[0], a1:snaps[1], a2:snaps[2], cur:snaps[S.d2.locked?2:(S.d1.locked?1:0)], combos};
+}
+function biggest(before, after){
+  let best = null;
+  CASE.stages.forEach(s=>{ const d = after[s.id]-before[s.id]; if(!best || Math.abs(d)>Math.abs(best.d)) best = {id:s.id, d}; });
+  return best;
+}
+
+/* ---------- loop SVG ---------- */
+function loopSVG(cur, prev){
+  /* Figure-eight: company side (Purpose to Transfer) on the left lobe, customer side (Advocacy, Lifetime Value) on the right, the environment at the crossing. */
+  const W=360, H=250, cx=180, cy=124, a=150, ys=1.55, r=17;
+  const P = t => { const d = 1 + Math.sin(t)**2; return {x: cx + a*Math.cos(t)/d, y: cy + ys*a*Math.sin(t)*Math.cos(t)/d}; };
+  const T = [0.667,0.833,1,1.167,1.333,1.833,2.167].map(k=>k*Math.PI);
+  let path = "";
+  for(let k=0;k<=240;k++){ const p = P(k/240*2*Math.PI); path += (k?"L":"M")+p.x.toFixed(1)+" "+p.y.toFixed(1)+" "; }
+  let arrows = "";
+  for(let i=0;i<7;i++){
+    let t0 = T[i], t1 = T[(i+1)%7]; if(t1 <= t0) t1 += 2*Math.PI;
+    const tm = (t0+t1)/2, p0 = P(tm-0.01), p1 = P(tm+0.01), pm = P(tm);
+    const rot = Math.atan2(p1.y-p0.y, p1.x-p0.x)*180/Math.PI;
+    arrows += `<path d="M -4 -4 L 3 0 L -4 4" fill="none" stroke="var(--muted)" stroke-width="1.6" transform="translate(${pm.x.toFixed(1)},${pm.y.toFixed(1)}) rotate(${rot.toFixed(1)})"/>`;
+  }
+  const lobes = [{x:cx-a*0.62, y:cy}, {x:cx+a*0.62, y:cy}];
+  const nodes = CASE.stages.map((s,i)=>{
+    const p = P(T[i]), lc = i<5 ? lobes[0] : lobes[1];
+    let dx = p.x-lc.x, dy = (p.y-lc.y)*1.4; const m = Math.hypot(dx,dy)||1; dx/=m; dy/=m;
+    const side = Math.abs(dy) < 0.4;
+    const lx = side ? p.x : p.x + dx*(r+7), ly = side ? p.y + r + 13 : p.y + dy*(r+9) + 3.5;
+    const anchor = side ? "middle" : dx > 0.35 ? "start" : dx < -0.35 ? "end" : "middle";
+    const v = cur[s.id], d = prev ? v - prev[s.id] : 0;
+    const bx = p.x + (dx >= 0 ? -1 : 1)*(r+2), by = p.y + (dy >= 0 ? -1 : 1)*(r-2);
+    const badge = d ? `<g transform="translate(${bx.toFixed(1)},${by.toFixed(1)})"><rect x="-13" y="-8" width="26" height="15" rx="7.5" fill="${d>0?"var(--good-bg)":"var(--down-bg)"}" stroke="${d>0?"var(--good)":"var(--down)"}"/><text x="0" y="3.5" text-anchor="middle" font-family="DM Mono, monospace" font-size="9" fill="${d>0?"var(--good)":"var(--down)"}">${d>0?"+":""}${d}</text></g>` : "";
+    return `<g><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="var(--surface)" stroke="var(--red)" stroke-width="${1+(v/100)*3}"/>
+      <text x="${p.x.toFixed(1)}" y="${(p.y+4.5).toFixed(1)}" text-anchor="middle" font-family="DM Mono, monospace" font-size="12.5" fill="var(--ink)">${v}</text>
+      <text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" font-family="DM Sans, Arial, sans-serif" font-size="10.5" font-weight="700" fill="var(--ink)">${s.name}</text>${badge}</g>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="The seven-stage loop as a figure eight, with current scores">
+    <path d="${path}" fill="none" stroke="var(--line)" stroke-width="7" stroke-linejoin="round"/>${arrows}
+    <rect x="${cx-34}" y="${cy-7}" width="68" height="14" rx="3" fill="var(--surface)"/>
+    <text x="${cx}" y="${cy+3.5}" text-anchor="middle" font-family="DM Sans, Arial, sans-serif" font-size="8.5" letter-spacing="1" fill="var(--muted)">ENVIRONMENT</text>
+    <text x="${lobes[0].x}" y="${cy+3}" text-anchor="middle" font-family="DM Sans, Arial, sans-serif" font-size="8.5" letter-spacing="0.8" fill="var(--muted)">COMPANY</text>
+    <text x="${lobes[1].x}" y="${cy+3}" text-anchor="middle" font-family="DM Sans, Arial, sans-serif" font-size="8.5" letter-spacing="0.8" fill="var(--muted)">CUSTOMER</text>${nodes}</svg>`;
+}
+function renderChrome(){
+  document.title = `${CASE.retailer} Friday Simulation`;
+  $("#caseTitle").textContent = CASE.title;
+  $("#loopTitle").textContent = `${CASE.retailer}'s loop`;
+  if(CASE.loopNote){ $("#loopCaseNote").textContent = CASE.loopNote; $("#loopCaseNote").hidden = false; }
+  const lab = m => `${esc(m.label)}${m.hint?` <span class="hint">(${esc(m.hint)})</span>`:""}`;
+  $("#hLab").innerHTML = lab(CASE.meters.health);
+  if(CASE.meters.supply) $("#sLab").innerHTML = lab(CASE.meters.supply); else $("#sMeter").hidden = true;
+}
+function renderSide(){
+  const c = compute();
+  let prev = null, note = "Starting point";
+  if(S.d2.locked){ prev = c.a1; note = "After Decision 2"; } else if(S.d1.locked){ prev = c.base; note = "After Decision 1"; }
+  $("#loopSvg").innerHTML = loopSVG(c.cur, prev);
+  $("#loopNote").textContent = note;
+  $("#hVal").textContent = c.cur.health; $("#hFill").style.width = c.cur.health + "%";
+  if(CASE.meters.supply){ $("#sVal").textContent = c.cur.supply; $("#sFill").style.width = c.cur.supply + "%"; }
+}
+
+/* ---------- clock ---------- */
+function elapsedMs(){ if(!S.startTs) return 0; return (S.pausedAt || Date.now()) - S.startTs - (S.pausedTotal||0); }
+function tick(){
+  const left = sessionMin()*60000 - elapsedMs(), neg = left < 0, a = Math.abs(left);
+  const el = $("#clock");
+  el.textContent = (neg?"+":"") + String(Math.floor(a/60000)).padStart(2,"0") + ":" + String(Math.floor((a%60000)/1000)).padStart(2,"0");
+  el.classList.toggle("late", neg || left < 5*60000);
+  $("#pauseBtn").textContent = S.pausedAt ? "Resume" : "Pause";
+  $("#pauseBtn").hidden = !S.startTs;
+}
+setInterval(tick, 1000);
+$("#pauseBtn").addEventListener("click", ()=>{
+  if(!S.startTs) return;
+  if(S.pausedAt){ S.pausedTotal += Date.now() - S.pausedAt; S.pausedAt = null; } else { S.pausedAt = Date.now(); }
+  save(); tick();
+});
+
+function renderSteps(){
+  const ph = PH();
+  $("#steps").innerHTML = ph.map((p,i)=>`<div class="step ${i<S.phase?"done":""} ${i===S.phase?"now":""}"><b>${String(i+1).padStart(2,"0")}${p.min?` · ${p.min} min`:""}</b>${p.label}</div>`).join("");
+  $("#groupLabel").textContent = S.group ? S.group : (isClass() ? "Class mode" : "No group yet");
+  document.body.classList.toggle("classmode", isClass());
+  $("#footNote").textContent = isClass()
+    ? "Class mode: the instructor runs the sim on the projector. Students record their own thinking on the worksheet."
+    : "Group work runs on one laptop. Your work saves in this browser, so stay on the same laptop.";
+}
+
+/* ---------- form helpers ---------- */
+function field(id, label, hint, value, min, rows){
+  const n = len(value);
+  return `<div><label for="${id}">${label} ${hint?`<span class="hint">${hint}</span>`:""}</label>
+    <textarea id="${id}" data-bind="${id}" data-min="${min}" rows="${rows||3}">${esc(value)}</textarea>
+    <div class="count ${n>=min?"ok":""}" data-count="${id}">${n>=min?"✓":`${n} / ${min} characters`}</div></div>`;
+}
+function stageSelect(id, value, label){
+  return `<div><label for="${id}">${label}</label><select id="${id}" data-bind="${id}"><option value="">Choose a stage</option>${CASE.stages.map(s=>`<option value="${s.id}" ${value===s.id?"selected":""}>${s.name}</option>`).join("")}</select></div>`;
+}
+const BIND = {
+  "strong": v=>S.strong=v, "breaks": v=>S.breaks=v,
+  "d1-rip": v=>S.d1.ripple=v, "d2-rip": v=>S.d2.ripple=v,
+  "d1-first": v=>S.d1.first=v, "d1-fit": v=>S.d1.fit=v, "d1-stake": v=>S.d1.stake=v, "d1-risk": v=>S.d1.risk=v,
+  "d2-first": v=>S.d2.first=v, "d2-fit": v=>S.d2.fit=v, "d2-stake": v=>S.d2.stake=v, "d2-risk": v=>S.d2.risk=v,
+  "b-rec": v=>S.board.rec=v, "b-stage": v=>S.board.stage=v, "b-ripple": v=>S.board.ripple=v, "b-misses": v=>S.board.misses=v, "b-reply": v=>S.board.reply=v,
+  "sh-line": v=>S.share.line=v,
+  "strongFact": v=>S.strongFact=v, "breaksFact": v=>S.breaksFact=v,
+  "db-q1": v=>S.debrief.q1=v, "db-q2": v=>S.debrief.q2=v, "db-dissent": v=>S.debrief.dissent=v,
+  "group": v=>S.group=v, "members": v=>S.members=v.split(/[\n,]+/).map(x=>x.trim()).filter(Boolean)
+};
+CASE.stages.forEach(s => BIND["loop-"+s.id] = v => S.loop[s.id] = v);
+document.addEventListener("input", e=>{
+  const t = e.target, k = t.dataset.bind;
+  if(k && BIND[k]) BIND[k](t.value);
+  else if(t.dataset.exit){ const [name, q] = t.dataset.exit.split("|"); (S.exit[name] = S.exit[name] || {a1:"",a2:"",absent:false})[q] = t.value; }
+  else if(t.dataset.vote){ const [dk, o] = t.dataset.vote.split("|"); S[dk].votes[o] = t.value; }
+  else return;
+  const c = $(`[data-count="${t.id}"]`);
+  if(c){ const n = len(t.value), m = +t.dataset.min; c.textContent = n>=m ? "✓" : `${n} / ${m} characters`; c.classList.toggle("ok", n>=m); }
+  if(k==="group") $("#groupLabel").textContent = S.group || (isClass()?"Class mode":"No group yet");
+  save(); refreshGates();
+});
+document.addEventListener("change", e=>{
+  const t = e.target, k = t.dataset.bind;
+  if(k && BIND[k]){ BIND[k](t.value); save(); refreshGates(); }
+  if(t.dataset.present !== undefined){ const m = t.dataset.present; (S.exit[m] = S.exit[m] || {absent:false}).absent = !t.checked; save(); refreshGates(); }
+  if(t.dataset.absent !== undefined){ const m = t.dataset.absent; (S.exit[m] = S.exit[m] || {a1:"",a2:"",absent:false}).absent = t.checked; save(); render(); }
+  if(t.name === "mode" && !S.startTs && MODES.includes(t.value)){ S.mode = t.value; save(); render(); }
+});
+
+const decOK = d => d.choice && d.first && len(d.fit)>=MIN.why && len(d.stake)>=MIN.why && len(d.risk)>=MIN.why;
+const GATES = {
+  setup: ()=> isClass() ? len(S.group)>=2 : (len(S.group)>=2 && S.members.length>=2),
+  brief: ()=> Object.keys(S.recall.answers).length===CASE.recall.length && S.strong && S.breaks &&
+    (isClass() ? CASE.stages.every(s=>len(S.loop[s.id])>=MIN.loop) : (len(S.strongFact)>=MIN.fact && len(S.breaksFact)>=MIN.fact)),
+  d1: ()=> decOK(S.d1), d2: ()=> decOK(S.d2),
+  d1rip: ()=> len(S.d1.ripple)>=MIN.rip, d2rip: ()=> len(S.d2.ripple)>=MIN.rip,
+  board: ()=> len(S.board.rec)>=MIN.rec && S.board.stage && len(S.board.ripple)>=MIN.ripple && len(S.board.misses)>=MIN.misses,
+  reply: ()=> len(S.board.reply)>=MIN.reply,
+  share: ()=> len(S.share.line)>=MIN.share && !!S.share.speaker,
+  exit: ()=> isClass() || (S.members.some(m=>!(S.exit[m]&&S.exit[m].absent)) && len(S.debrief.q1)>=MIN.debrief && len(S.debrief.q2)>=MIN.debrief && len(S.debrief.dissent)>=MIN.dissent)
+};
+const GATEMSG = {
+  setup: ()=> isClass() ? "Add a section name." : "Add a group name and at least two members.",
+  brief: ()=> isClass() ? "Answer every question, fill each stage of the loop, and pick where it's strongest and where it's weakest." : "Answer every question, then pick where the loop is strongest and where it's weakest, with a fact for each.",
+  d1: ()=> "Pick an option, name the stage it hits first, and fill in all three reasons.",
+  d2: ()=> "Pick an option, name the stage it hits first, and fill in all three reasons.",
+  d1rip: ()=> "Agree on your one-sentence answer before you move on.",
+  d2rip: ()=> "Agree on your one-sentence answer before you move on.",
+  board: ()=> "Fill in all four parts of the recommendation.",
+  reply: ()=> "Answer the board's question before you close the meeting.",
+  share: ()=> "Write your one-sentence call and pick a speaker.",
+  exit: ()=> "Fill in both group answers and where you disagreed. Uncheck anyone who isn't here."
+};
+function refreshGates(){
+  document.querySelectorAll("[data-gate]").forEach(b=>{
+    const ok = GATES[b.dataset.gate]();
+    b.disabled = !ok;
+    const g = $(`[data-gatemsg="${b.dataset.gate}"]`);
+    if(g) g.textContent = ok ? "" : GATEMSG[b.dataset.gate]();
+  });
+}
+function go(i){ S.phase = i; save(); render(); window.scrollTo({top:0, behavior:"smooth"}); }
+function goKey(k){ go(idxOf(k)); }
+
+/* =========================================================
+   VIEWS
+   ========================================================= */
+function vSetup(){
+  const cls = isClass();
+  return `<section class="card stack">
+    <div class="eyebrow">Friday · Recommend action</div>
+    <h2>${esc(CASE.title)}</h2>
+    <p class="lede">${esc(CASE.bigQuestion)} Today you'll find out what your answer costs. ${esc(CASE.role)} You'll make two decisions, watch each one ripple around the loop, question the people it affects, and defend a final call to ${esc(CASE.boardName)}.</p>
+    ${MODES.length < 2 ? "" : `<fieldset class="stack" style="border:1px solid var(--line);border-radius:10px;padding:14px">
+      <legend style="font-weight:700;padding:0 6px">How is this running today?</legend>
+      <label style="font-weight:400;display:flex;gap:10px;align-items:flex-start"><input type="radio" name="mode" value="class" ${cls?"checked":""} ${S.startTs?"disabled":""}> <span><b>Class mode</b> · the instructor runs it on the projector and the room decides together. Students record their own thinking on the paper worksheet.</span></label>
+      <label style="font-weight:400;display:flex;gap:10px;align-items:flex-start"><input type="radio" name="mode" value="group" ${cls?"":"checked"} ${S.startTs?"disabled":""}> <span><b>Group mode</b> · each group runs it on one laptop and downloads its record for Blackboard.</span></label>
+    </fieldset>`}
+    ${cls ? `
+      <div><label for="group">Section</label><input type="text" id="group" data-bind="group" value="${esc(S.group)}" placeholder="e.g. Section 003" autocomplete="off"></div>
+      <div class="callout"><b>Before class:</b> print one worksheet per student. It follows the sim step by step, and it's what students turn in for the 10 points.
+        <div class="row" style="margin-top:10px"><button class="btn ghost" type="button" id="dlWorksheet">Download the student worksheet (PDF)</button><span class="gate" id="wsMsg"></span></div></div>
+    ` : `
+      <div class="callout"><b>How today works.</b> One laptop runs the sim; keep the case notebook open on the others. The clock runs ${sessionMin()} minutes, ending with time to download your log and upload it to Blackboard. Your grade comes from the reasoning in your decision log, not from your loop scores.</div>
+      <div><label for="group">Group name</label><input type="text" id="group" data-bind="group" value="${esc(S.group)}" autocomplete="off"></div>
+      <div><label for="members">Group members <span class="hint">one per line, first name and last initial</span></label><textarea id="members" data-bind="members" rows="4">${esc(S.members.join("\n"))}</textarea></div>
+    `}
+    <div class="row"><button class="btn" data-gate="setup" id="startBtn" type="button">Start the ${sessionMin()}-minute clock</button><span class="gate" data-gatemsg="setup"></span></div>
+    <p class="banner">Facts tagged <span class="tag real">Reported</span> come from the sources in the case guide. Facts tagged <span class="tag scen">Scenario</span> are part of the exercise.</p>
+  </section>`;
+}
+
+function vBrief(){
+  const cls = isClass();
+  const qs = CASE.recall.map((q,i)=>{
+    const ans = S.recall.answers[i], done = ans !== undefined;
+    return `<div class="q"><b>${i+1}. ${esc(q.q)}</b>
+      <div class="qopts">${q.a.map((a,j)=>{ let c=""; if(done){ if(j===q.c) c="right"; else if(j===ans) c="wrong"; }
+        return `<button class="a ${c}" type="button" data-q="${i}" data-a="${j}" ${done?"disabled":""}>${String.fromCharCode(65+j)}. ${esc(a)}</button>`; }).join("")}</div>
+      ${done?`<p class="why"><b>${ans===q.c?"Right.":"Not quite."}</b> ${esc(q.why)} <span class="pill">${esc(q.ref)}</span></p>`:""}</div>`;
+  }).join("");
+  const right = Object.entries(S.recall.answers).filter(([i,a])=>CASE.recall[i].c===a).length;
+  const loopRows = CASE.stages.map(s=>`<div><label for="loop-${s.id}">${s.name} <span class="hint">${esc(CASE.loopPrompts[s.id])}</span></label>
+      <input type="text" id="loop-${s.id}" data-bind="loop-${s.id}" value="${esc(S.loop[s.id])}" autocomplete="off"></div>`).join("");
+  const sel = (id, v, label) => `<div style="flex:1 1 220px"><label for="${id}">${label}</label><select id="${id}" data-bind="${id}"><option value="">Choose a stage</option>${CASE.stages.map(s=>`<option value="${s.id}" ${v===s.id?"selected":""}>${s.name}</option>`).join("")}</select></div>`;
+  return `<section class="card stack">
+    <div class="row" style="justify-content:space-between"><div class="eyebrow">Briefing · from your Monday and Wednesday quizzes</div><span class="target">about ${minOf("brief")} min</span></div>
+    <h2>Before you take the meeting</h2>
+    <p class="lede">${cls ? "Take a show of hands on each question, then click the answer most of the room chose." : "Answer as a group; you get one try each."} Each answer links back to where it lives in this week's material.</p>
+    ${qs}
+    <p class="gate">Recall: ${right} of ${Object.keys(S.recall.answers).length} answered correctly</p>
+  </section>
+  <section class="card stack">
+    ${cls ? `<div class="eyebrow">The full loop</div>
+    <h3>One ${esc(CASE.retailer)} fact for each stage</h3>
+    <p class="lede">Students fill this in on Part 1 of the worksheet first. Then take one fact per stage from the room.</p>
+    ${loopRows}
+    <div class="row" style="align-items:flex-end">${sel("strong", S.strong, "Where is the loop strongest?")}${sel("breaks", S.breaks, "Where is it weakest?")}</div>`
+    : `<div class="eyebrow">Standing prep question</div>
+    <h3>Where is ${esc(CASE.retailer)}'s loop strongest, and where is it weakest?</h3>
+    <p class="lede">One specific fact for each, from your notebook prep.</p>
+    <div class="row" style="align-items:flex-end">${sel("strong", S.strong, "Strongest stage")}${sel("breaks", S.breaks, "Weakest stage")}</div>
+    ${field("strongFact","The fact that shows it's strongest","",S.strongFact,MIN.fact,2)}
+    ${field("breaksFact","The fact that shows it's weakest","",S.breaksFact,MIN.fact,2)}`}
+    <div class="row"><button class="btn" data-gate="brief" id="briefNext" type="button">Go to Decision 1</button><span class="gate" data-gatemsg="brief"></span></div>
+  </section>`;
+}
+
+function dynamicFact(){
+  const o = opt(0, S.d1.choice), h = compute().a1.health;
+  const extra = (CASE.decisions[1].dynamic||{})[S.d1.choice] || "";
+  return `Your Decision 1 (${o.name}) is in effect. ${extra} ${CASE.meters.health.label} is ${h} of 100${h<60?`, and ${CASE.healthWarning}`:""}.`;
+}
+
+function vDecision(di){
+  const D = CASE.decisions[di], st = di===0 ? S.d1 : S.d2, k = di===0 ? "d1" : "d2", cls = isClass();
+  const facts = D.facts.map(f=>`<li><span>${esc(f.t==="DYNAMIC" ? dynamicFact() : f.t)}<span class="tag ${f.real?"real":"scen"}">${f.real?"Reported":"Scenario"}</span></span></li>`).join("");
+  const opts = D.options.map(o=>`<button class="opt ${st.choice===o.id?"sel":""}" type="button" data-opt="${k}|${o.id}" aria-pressed="${st.choice===o.id}"><span class="k">Option ${o.id}</span><strong>${esc(o.name)}</strong><span>${esc(o.desc)}</span></button>`).join("");
+  const votes = cls ? `<div class="row" style="gap:16px">${D.options.map(o=>`<div class="row" style="gap:6px"><label for="v-${k}-${o.id}" style="margin:0">${o.id} votes</label><input type="text" inputmode="numeric" id="v-${k}-${o.id}" data-vote="${k}|${o.id}" value="${esc(st.votes[o.id])}" style="width:70px;padding:6px 8px"></div>`).join("")}</div>` : "";
+  const guideRef = D.guideRef || "";
+  return `<section class="card stack">
+    <div class="row" style="justify-content:space-between"><div class="eyebrow">${esc(D.label)}</div><span class="target">about ${minOf(di===0?"d1":"d2")} min</span></div>
+    <h2>${esc(D.title)}</h2>
+    <div class="memo"><div class="from">${esc(D.from)}</div><p>${esc(D.memo)}</p></div>
+    <div><h3 style="margin-bottom:8px">What you know</h3><ol class="facts">${facts}</ol></div>
+    <p class="gate">${guideRef?`From this week: ${esc(guideRef)} `:""}<a href="#" data-guide="1" style="color:var(--red)">Open the recap</a></p>
+  </section>
+  <section class="card stack">
+    <h3>${cls ? "Vote, then choose" : "Choose one"}</h3>
+    ${cls ? `<p class="lede">Students circle their own vote on the worksheet first. Take a count for each option, then click the one the class goes with.</p>` : ""}
+    ${votes}
+    <div class="opts">${opts}</div>
+  </section>
+  <section class="card stack">
+    <h3>${cls ? "The class's reasoning" : "Your reasoning"}</h3>
+    <p class="lede">Brand fit, then stakeholders, then risk. Strong answers lead with brand and marketing logic, not ethics alone.</p>
+    ${stageSelect(k+"-first", st.first, TX("firstStage","Which stage of the loop does this act on first?"))}
+    ${field(k+"-fit","1. Brand fit",TX("fit",`Does it fit ${CASE.retailer}'s positioning, its purpose and its customer?`),st.fit,MIN.why)}
+    ${field(k+"-stake","2. Stakeholders",TX("stake","Who benefits, and who bears the cost?"),st.stake,MIN.why)}
+    ${field(k+"-risk","3. Risk",TX("risk","What could go wrong, and what would have to be true for it to work?"),st.risk,MIN.why)}
+    <div class="row"><button class="btn" data-gate="${k}" id="lock-${k}" type="button">Lock in and see the ripple</button><span class="gate" data-gatemsg="${k}"></span></div>
+  </section>`;
+}
+
+function rippleTable(before, after){
+  const row = (n, b, a) => { const d = a-b; return `<tr><td>${n}</td><td class="num">${b}</td><td class="num">${a}</td><td><span class="d ${d>0?"up":d<0?"dn":"zero"}">${d>0?"+":""}${d}</span></td></tr>`; };
+  return `<div style="overflow-x:auto"><table><thead><tr><th>Stage</th><th>Before</th><th>After</th><th>Change</th></tr></thead><tbody>
+    ${CASE.stages.map(s=>row(s.name, before[s.id], after[s.id])).join("")}${row(CASE.meters.health.label, before.health, after.health)}${CASE.meters.supply?row(CASE.meters.supply.label, before.supply, after.supply):""}</tbody></table></div>`;
+}
+
+function vRipple(di){
+  const st = di===0 ? S.d1 : S.d2, k = di===0 ? "d1" : "d2";
+  const o = opt(di, st.choice), c = compute();
+  const before = di===0 ? c.base : c.a1, after = di===0 ? c.a1 : c.a2, big = biggest(before, after);
+  const match = big.id === st.first;
+  const voices = st.aiPending ? `<p class="thinking">The stakeholders are reading your reasoning…</p>` : Object.keys(o.voices).map(id=>{ const p = CASE.personas[id];
+    return `<div class="voice"><div class="who">${esc(p.name)}</div><div class="role">${esc(p.role)}</div><p>${esc((st.voices&&st.voices[id])||o.voices[id])}</p></div>`; }).join("");
+  const exec = st.aiPending ? `<div class="callout thinking">Claude is reading how your reasoning would play out…</div>`
+    : st.adj ? `<div class="callout"><b>How your reasoning played out.</b> ${esc(st.adj.note)}${Object.keys(st.adj.fx).length?` <span class="pill">${Object.entries(st.adj.fx).map(([s,v])=>`${s==="health"?CASE.meters.health.label:stageName(s)} ${v>0?"+":""}${v}`).join(" · ")}</span>`:""}</div>` : "";
+  const ASK = CASE.decisions[di].asks, used = st.asks.length >= 2;
+  const askBox = aiOn() ? `<section class="card stack">
+      <div class="row" style="justify-content:space-between"><h3>Question a stakeholder</h3><span class="pill">${2-st.asks.length} of 2 left</span></div>
+      <p class="lede">Ask anyone here two questions this round, in your own words. The suggestions are a place to start.</p>
+      ${st.asks.length ? `<div class="chat">${st.asks.map(a=>`<div class="m us"><b>To ${esc(CASE.personas[a.who].name)}:</b> ${esc(a.q)}</div><div class="m them">${a.a?esc(a.a):'<span class="thinking">Thinking…</span>'}</div>`).join("")}</div>` : ""}
+      ${used ? `<p class="gate">That's your two questions for this round.</p>` : `
+      <div class="row" style="align-items:stretch">
+        <select id="liveWho-${k}" style="flex:0 1 230px" aria-label="Who to ask">${Object.keys(ASK).map(id=>`<option value="${id}">${esc(CASE.personas[id].name)}</option>`).join("")}</select>
+        <input type="text" id="liveQ-${k}" placeholder="Your question" style="flex:1 1 240px" aria-label="Your question">
+        <button class="btn" type="button" data-liveask="${k}">Ask</button></div>
+      <div class="row" style="gap:6px">${Object.keys(ASK).flatMap(id=>ASK[id].slice(0,1).map(qa=>`<button class="btn ghost askq" type="button" data-suggest="${k}" data-who="${id}" data-q="${esc(qa[0])}">${esc(qa[0])}</button>`)).join("")}</div>`}
+    </section>` : `<section class="card stack">
+      <div class="row" style="justify-content:space-between"><h3>Question a stakeholder</h3><span class="pill">${2-st.asks.length} of 2 left</span></div>
+      <p class="lede">Pick two questions this round. Choose the ones that would change your next decision.</p>
+      ${st.asks.length ? `<div class="chat">${st.asks.map(a=>`<div class="m us"><b>To ${esc(CASE.personas[a.who].name)}:</b> ${esc(a.q)}</div><div class="m them">${esc(a.a)}</div>`).join("")}</div>` : ""}
+      ${used ? `<p class="gate">That's your two questions for this round.</p>` : `<div class="voices">${Object.keys(ASK).map(id=>`<div class="voice"><div class="who">${esc(CASE.personas[id].name)}</div><div class="role">${esc(CASE.personas[id].role)}</div>
+        <div class="stack" style="gap:6px">${ASK[id].map((qa,qi)=>`<button class="btn ghost askq" type="button" data-askq="${k}|${id}|${qi}">${esc(qa[0])}</button>`).join("")}</div></div>`).join("")}</div>`}
+    </section>`;
+  return `<section class="card stack">
+    <div class="row" style="justify-content:space-between"><div class="eyebrow">The ripple · ${esc(CASE.decisions[di].label)}</div><span class="target">about ${minOf(di===0?"r1":"r2")} min</span></div>
+    <h2>${isClass()?"The class chose":"You chose"}: ${esc(o.name)}</h2>
+    <p>${esc(o.story)}</p>
+    ${(di===1?c.combos:[]).map(cb=>`<div class="callout"><b>Your two decisions interact.</b> ${esc(cb.note)}</div>`).join("")}
+    <div class="callout"><b>Check the prediction.</b> ${isClass()?"The class":"You"} said this acts first on <b>${esc(stageName(st.first))}</b>. The biggest move was at <b>${esc(stageName(big.id))}</b> (${big.d>0?"+":""}${big.d}). ${match?"Right read. Now trace where it went next.":"Talk it through: why did the effect land somewhere else first?"}</div>
+    ${exec}
+    ${rippleTable(before, after)}
+  </section>
+  <section class="card stack"><h3>What people are saying${st.voicesAI?` <span class="pill" style="font-family:var(--body)">Responding to your reasoning</span>`:""}</h3><div class="voices">${voices}</div></section>
+  ${askBox}
+  <section class="card stack">
+    <div class="eyebrow">Before you move on</div>
+    ${field(k+"-rip", TX("rippleQ", `In one sentence, as a group: what did this decision do to ${CASE.retailer}'s Advocacy and Lifetime Value?`), TX("rippleHint", "") + (isClass()?" Students write theirs on the worksheet first.":""), st.ripple, MIN.rip, 2)}
+    <div class="row"><button class="btn" type="button" data-gate="${k}rip" id="next-${k}">${di===0?"Go to the strategy shock":`Go to the ${esc((CASE.board.title||"Board meeting").toLowerCase())}`}</button><span class="gate" data-gatemsg="${k}rip"></span></div>
+  </section>`;
+}
+
+function fallbackChallenge(){
+  const r = (S.board.rec+" "+S.board.ripple).toLowerCase();
+  const hit = CASE.boardChallenges.find(c => !c.ifMissing.length || !c.ifMissing.some(w => r.includes(w)));
+  return hit.q;
+}
+
+function vBoard(){
+  const B = CASE.board, b = S.board;
+  return `<section class="card stack">
+    <div class="row" style="justify-content:space-between"><div class="eyebrow">${esc(CASE.board.title||"Board meeting")}</div><span class="target">about ${minOf("board")} min</span></div>
+    <h2>One recommendation for the next 12 months</h2>
+    <div class="memo"><div class="from">${esc(B.from)}</div><p>${esc(B.memo)}</p></div>
+    <p class="gate">${isClass()?"The class":"You"} chose <b>${esc(opt(0,S.d1.choice).name)}</b>, then <b>${esc(opt(1,S.d2.choice).name)}</b>. Build on what happened, including what went wrong.</p>
+    <div class="callout"><b>${esc(CASE.board.asks||"The board will ask")}</b><ul style="margin:6px 0 0;padding-left:18px">${CASE.guide.leadership.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+    ${isClass()?`<p class="lede">Give students two minutes to write their own recommendation on the worksheet first. Then build one together here.</p>`:""}
+  </section>
+  <section class="card stack">
+    ${field("b-rec","Recommendation",TX("rec",`Lead with the position. Say what ${CASE.retailer} should do, why it fits the brand and who pays for it.`),b.rec,MIN.rec,5)}
+    ${stageSelect("b-stage", b.stage, "Which stage does it act on?")}
+    ${field("b-ripple","What it does to the rest of the loop","Follow it to Advocacy and Lifetime Value.",b.ripple,MIN.ripple)}
+    ${field("b-misses","What the loop misses here","What does this decision cost that the loop has no box for?",b.misses,MIN.misses,2)}
+    ${b.challenge ? "" : `<div class="row"><button class="btn" data-gate="board" id="boardSubmit" type="button">Present to ${esc(CASE.boardName)}</button><span class="gate" data-gatemsg="board"></span></div>`}
+  </section>
+  ${b._waiting && !b.challenge ? `<section class="card stack"><p class="thinking">${esc(CASE.personas.board.name)} is reading your recommendation…</p></section>` : ""}
+  ${b.challenge ? `<section class="card stack">
+    <div class="eyebrow">${esc(CASE.personas.board.name)} · ${esc(CASE.personas.board.role)}</div>
+    <p style="font-size:1.12rem">${esc(b.challenge)}</p>
+    ${field("b-reply","Answer","Answer the question she asked.",b.reply,MIN.reply)}
+    <div class="row"><button class="btn" data-gate="reply" id="boardDone" type="button">Close the meeting</button><span class="gate" data-gatemsg="reply"></span></div>
+  </section>` : ""}`;
+}
+
+function vShare(){
+  const sh = S.share;
+  return `<section class="card stack">
+    <div class="row" style="justify-content:space-between"><div class="eyebrow">Share-out · whole class</div><span class="target">about ${minOf("share")} min</span></div>
+    <h2>How the room split</h2>
+    <p class="lede">Stop here and look up. Your instructor will call on a few groups to defend their call in 30 seconds. Listen for a group that chose differently from you; you'll need it in the debrief.</p>
+    ${field("sh-line","Your board call in one sentence","This is what your speaker reads.",sh.line,MIN.share,2)}
+    <div class="row"><button class="btn ghost" type="button" id="pickSpeaker">${sh.speaker?"Pick again":"Pick our speaker"}</button>
+      ${sh.speaker?`<span style="font-size:1.1rem">Speaker: <b>${esc(sh.speaker)}</b></span>`:`<span class="gate">Anyone may be picked, so everyone should be ready.</span>`}</div>
+    <div class="callout"><b>Your path:</b> ${esc(opt(0,S.d1.choice).name)} → ${esc(opt(1,S.d2.choice).name)}. Board question: ${esc(S.board.challenge)}</div>
+    <div class="row"><button class="btn" data-gate="share" id="shareDone" type="button">Go to the group debrief</button><span class="gate" data-gatemsg="share"></span></div>
+  </section>`;
+}
+
+function outcome(){
+  const c = compute(), f = c.a2, b = c.base;
+  const avg = x => CASE.stages.reduce((s,st)=>s+x[st.id],0)/7;
+  const d = Math.round((avg(f)-avg(b))*10)/10;
+  const b0 = CASE.baseline.health, OH = CASE.outcomeHealth;
+  const h = f.health < b0-10 ? OH[0] : f.health < b0 ? OH[1] : OH[2];
+  return {text:`Twelve months later: ${opt(0,S.d1.choice).later} ${opt(1,S.d2.choice).later} ${h}`, d};
+}
+
+function vExit(){
+  const o = outcome();
+  const head = `<section class="card stack"><div class="eyebrow">Outcome</div><h2>How the loop ended</h2><p>${esc(o.text)}</p>
+    <p class="gate">Average loop score moved ${o.d>0?"+":""}${o.d} from where ${esc(CASE.retailer)} started. Scores show the ripple, not anyone's grade.</p></section>`;
+  if(isClass()){
+    const D = CASE.debrief;
+    return head + `<section class="card stack">
+      <div class="row" style="justify-content:space-between"><div class="eyebrow">Wrap-up</div><span class="target">about ${minOf("exit")} min</span></div>
+      <h3>The tension this week</h3><p>${esc(D.tension)}</p>
+      <div class="opts" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+        <div class="voice"><div class="who">What strong recommendations do</div><ul style="margin:6px 0 0;padding-left:18px">${D.strong.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+        <div class="voice"><div class="who">What weak recommendations do</div><ul style="margin:6px 0 0;padding-left:18px">${D.weak.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div></div>
+      <div class="callout" style="font-size:1.05rem"><b>On your worksheet, on your own:</b><ol style="margin:6px 0 0;padding-left:20px">${CASE.exit.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>Turn it in on your way out.</div>
+      <div class="row"><button class="btn" id="exitDone" data-gate="exit" type="button">Finish and save the class record</button></div></section>`;
+  }
+  const here = S.members.map(m=>{ const absent = !!(S.exit[m]&&S.exit[m].absent);
+    return `<label style="font-weight:400;display:flex;gap:8px;align-items:center;margin:0"><input type="checkbox" data-present="${esc(m)}" ${absent?"":"checked"}> ${esc(m)}</label>`; }).join("");
+  const G = CASE.groupDebrief;
+  return head + `<section class="card stack">
+    <div class="row" style="justify-content:space-between"><div class="eyebrow">Group debrief</div><span class="target">about ${minOf("exit")} min</span></div>
+    <h2>Write alone, then agree</h2>
+    <ol style="margin:0;padding-left:20px" class="lede"><li>Everyone takes one minute to jot their own answer to both questions, on paper or their own laptop.</li><li>Go around the group. Each person reads theirs.</li><li>Agree on one answer for each and record it below, plus where you disagreed.</li></ol>
+    ${field("db-q1","1. "+G[0],"",S.debrief.q1,MIN.debrief)}
+    ${field("db-q2","2. "+G[1],"",S.debrief.q2,MIN.debrief)}
+    ${field("db-dissent","Where did we disagree?","Name the disagreement, even if you settled it.",S.debrief.dissent,MIN.dissent,2)}
+    <div><label>Who's here today <span class="hint">uncheck anyone who isn't</span></label><div class="row" style="gap:16px">${here}</div></div>
+    <div class="row"><button class="btn" data-gate="exit" id="exitDone" type="button">Go to wrap up</button><span class="gate" data-gatemsg="exit"></span></div></section>`;
+}
+
+/* ---------- record ---------- */
+function docModel(){
+  const c = compute(), cls = isClass();
+  const right = Object.entries(S.recall.answers).filter(([i,a])=>CASE.recall[i].c===a).length;
+  const sec = [];
+  sec.push({h: cls ? "Class session" : "Group", rows: cls
+    ? [["Section", S.group], ["Date", S.startTs ? new Date(S.startTs).toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"}) : ""]]
+    : [["Group", S.group], ["Members", S.members.map(m=>m+((S.exit[m]&&S.exit[m].absent)?" (absent)":"")).join(", ")], ["Date", S.startTs ? new Date(S.startTs).toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"}) : ""]]});
+  sec.push(cls
+    ? {h:"Briefing and the full loop", rows:[["Recall check", `${right} of ${CASE.recall.length} correct`], ...CASE.stages.map(s=>[s.name, S.loop[s.id]]), ["Strongest stage", stageName(S.strong)], ["Weakest stage", stageName(S.breaks)]]}
+    : {h:"Briefing", rows:[["Recall check", `${right} of ${CASE.recall.length} correct`], ["Strongest stage", `${stageName(S.strong)}: ${S.strongFact}`], ["Weakest stage", `${stageName(S.breaks)}: ${S.breaksFact}`]]});
+  [["d1",0],["d2",1]].forEach(([k,i])=>{
+    const st = S[k], o = opt(i, st.choice), D = CASE.decisions[i];
+    const before = i===0?c.base:c.a1, after = i===0?c.a1:c.a2, big = biggest(before, after);
+    const rows = [];
+    if(cls) rows.push(["Class vote", D.options.map(op=>`${op.id} ${op.name}: ${st.votes[op.id]||0}`).join(" · ")]);
+    rows.push(["Choice", `${o.name}. ${o.desc}`], ["Acts first on", stageName(st.first)], ["Brand fit", st.fit], ["Stakeholders", st.stake], ["Risk", st.risk],
+      ["What happened in the sim", `Biggest move at ${stageName(big.id)} (${big.d>0?"+":""}${big.d}). ${CASE.meters.health.label} ${before.health} to ${after.health}.`]);
+    rows.push([`What it did to ${CASE.retailer}'s Advocacy and Lifetime Value`, st.ripple]);
+    st.asks.forEach(a=>rows.push([`Question to ${CASE.personas[a.who].name}`, `${a.q}\nAnswer: ${a.a}`]));
+    sec.push({h:`${D.label}: ${D.title}`, rows});
+  });
+  const brows = [["Recommendation", S.board.rec], ["Acts on", stageName(S.board.stage)], ["What it does to the rest of the loop", S.board.ripple], ["What the loop misses", S.board.misses], ["The board's question", S.board.challenge], ["Answer", S.board.reply]];
+  if(!cls) brows.push(["Share-out call", `${S.share.line}${S.share.speaker?` (speaker: ${S.share.speaker})`:""}`]);
+  sec.push({h:`Recommendation to ${CASE.boardName}`, rows:brows});
+  sec.push({h:"Final loop", rows:[["Scores", CASE.stages.map(s=>`${s.name} ${c.a2[s.id]}`).join(" · ")], [CASE.meters.health.label, String(c.a2.health)]]});
+  if(!cls){
+    sec.push({h:"Group debrief", rows:[[CASE.groupDebrief[0], S.debrief.q1], [CASE.groupDebrief[1], S.debrief.q2], ["Where we disagreed", S.debrief.dissent]]});
+  }
+  return {title:`${CASE.retailer} Friday Simulation`, sub: cls ? "MKTG 44303 | Class record" : "MKTG 44303 | Decision log", sections:sec};
+}
+function logText(){
+  const m = docModel(), L = [m.sub, m.title, ""];
+  m.sections.forEach(s=>{ L.push(s.h.toUpperCase()); s.rows.forEach(([k,v])=>L.push(`${k}: ${v||""}`)); L.push(""); });
+  return L.join("\n");
+}
+function vLog(){
+  const cls = isClass();
+  return `<section class="card stack">
+    <div class="row" style="justify-content:space-between"><div class="eyebrow">${cls?"Class record":"Wrap up · decision log"}</div>${cls?"":`<span class="target">about ${minOf("log")} min</span>`}</div>
+    <h2>${cls?"Save today's class record":"Submit this to Blackboard"}</h2>
+    <p class="lede">${cls?"Students turn in their paper worksheets. Keep this record to compare with each section, or to post for students who want to review.":"Download your group's work and upload it to this week's Blackboard group assignment before you leave."}</p>
+    <div class="row"><button class="btn" type="button" id="dlPdf">Download PDF</button><button class="btn ghost" type="button" id="dlDocx">Download Word</button><button class="btn ghost" type="button" id="copyLog">Copy as text</button></div>
+    <p class="gate" id="copyMsg"></p>
+    <pre class="log" id="logText">${esc(logText())}</pre>
+  </section>
+  ${aiOn() && !cls ? `<section class="card stack"><div class="eyebrow">Practice feedback</div><div class="row"><button class="btn ghost" type="button" id="coachBtn" ${S.coach?"disabled":""}>Get feedback on our reasoning</button><span class="ai-note">From Claude. It does not affect your grade.</span></div>${S.coach?`<div class="callout" style="white-space:pre-wrap">${esc(S.coach)}</div>`:""}</section>` : ""}
+  ${cls ? "" : `<section class="card stack"><div class="eyebrow">Debrief</div><h3>The tension this week</h3><p>${esc(CASE.debrief.tension)}</p>
+    <div class="opts" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+      <div class="voice"><div class="who">Strong recommendations</div><ul style="margin:6px 0 0;padding-left:18px">${CASE.debrief.strong.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div class="voice"><div class="who">Weak recommendations</div><ul style="margin:6px 0 0;padding-left:18px">${CASE.debrief.weak.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div></div></section>`}`;
+}
+
+/* ---------- files ---------- */
+const libs = {};
+function loadLib(url, g){
+  if(window[g]) return Promise.resolve(window[g]);
+  if(!libs[url]) libs[url] = new Promise((res, rej)=>{ const sc = document.createElement("script"); sc.src = url; sc.onload = ()=> window[g] ? res(window[g]) : rej(new Error("load")); sc.onerror = ()=>{ delete libs[url]; rej(new Error("load")); }; document.head.appendChild(sc); });
+  return libs[url];
+}
+const JSPDF = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+const DOCX = "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js";
+const pdfSafe = s => String(s||"").replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/[–—]/g,"-").replace(/→/g,"->").replace(/·/g,"|");
+
+async function buildPDF(){
+  const lib = await loadLib(JSPDF, "jspdf");
+  const doc = new lib.jsPDF({unit:"pt", format:"letter"});
+  const M = 54, W = 612 - M*2, PHt = 792, RED = [157,34,53], INK = [30,25,26], MUTED = [98,86,89];
+  const m = docModel(); let y;
+  doc.setFillColor(...RED); doc.rect(0,0,612,78,"F");
+  doc.setTextColor(255,255,255); doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.text(pdfSafe(m.sub).toUpperCase(), M, 30);
+  doc.setFont("helvetica","bold"); doc.setFontSize(20); doc.text(pdfSafe(m.title), M, 56);
+  y = 108;
+  const need = h => { if(y + h > PHt - M){ doc.addPage(); y = M; } };
+  m.sections.forEach(sec=>{
+    need(40);
+    doc.setTextColor(...RED); doc.setFont("helvetica","bold"); doc.setFontSize(12.5);
+    const hl = doc.splitTextToSize(pdfSafe(sec.h), W); doc.text(hl, M, y); y += hl.length*16;
+    doc.setDrawColor(...RED); doc.setLineWidth(.8); doc.line(M, y-8, M+W, y-8); y += 6;
+    sec.rows.forEach(([k,v])=>{
+      const vl = doc.splitTextToSize(pdfSafe(v||"-"), W);
+      need(14 + Math.min(vl.length,3)*13);
+      doc.setTextColor(...MUTED); doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.text(pdfSafe(k).toUpperCase(), M, y); y += 13;
+      doc.setTextColor(...INK); doc.setFont("helvetica","normal"); doc.setFontSize(10.5);
+      vl.forEach(line=>{ need(13); doc.text(line, M, y); y += 13.5; });
+      y += 8;
+    });
+    y += 8;
+  });
+  const n = doc.getNumberOfPages();
+  for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...MUTED); doc.text(pdfSafe(`${S.group} | page ${i} of ${n}`), M, PHt-28); }
+  return doc.output("blob");
+}
+async function buildDOCX(){
+  const d = await loadLib(DOCX, "docx");
+  const m = docModel(), kids = [];
+  kids.push(new d.Paragraph({children:[new d.TextRun({text:m.sub.toUpperCase(), color:"9D2235", bold:true, size:18})]}));
+  kids.push(new d.Paragraph({spacing:{after:240}, children:[new d.TextRun({text:m.title, bold:true, size:40, color:"1E191A"})]}));
+  m.sections.forEach(sec=>{
+    kids.push(new d.Paragraph({spacing:{before:280, after:120}, border:{bottom:{color:"9D2235", size:6, style:d.BorderStyle.SINGLE, space:2}}, children:[new d.TextRun({text:sec.h, bold:true, size:26, color:"9D2235"})]}));
+    sec.rows.forEach(([k,v])=>{
+      kids.push(new d.Paragraph({spacing:{before:120}, children:[new d.TextRun({text:String(k).toUpperCase(), bold:true, size:17, color:"625659"})]}));
+      String(v||"-").split("\n").forEach(line=> kids.push(new d.Paragraph({spacing:{after:40}, children:[new d.TextRun({text:line, size:21})]})));
+    });
+  });
+  return d.Packer.toBlob(new d.Document({styles:{default:{document:{run:{font:"Arial"}}}}, sections:[{properties:{page:{margin:{top:1080,bottom:1080,left:1080,right:1080}}}, children:kids}]}));
+}
+
+/* Student worksheet: follows the sim step by step; students write by hand */
+async function buildWorksheet(){
+  const lib = await loadLib(JSPDF, "jspdf");
+  const doc = new lib.jsPDF({unit:"pt", format:"letter"});
+  const M = 50, W = 612 - M*2, PHt = 792, RED = [157,34,53], INK = [30,25,26], MUTED = [98,86,89], RULE = [217,187,189];
+  let y = 0;
+  const need = h => { if(y + h > PHt - 44){ doc.addPage(); y = 54; } };
+  const lines = (n, gap=21) => { for(let i=0;i<n;i++){ need(gap); y += gap; doc.setDrawColor(...RULE); doc.setLineWidth(.6); doc.line(M, y, M+W, y); } y += 8; };
+  const head = (num, t, sub) => { need(56); y += 10; doc.setFillColor(...RED); doc.rect(M, y-12, 22, 16, "F"); doc.setTextColor(255,255,255); doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.text(String(num), M+11, y, {align:"center"});
+    doc.setTextColor(...RED); doc.setFontSize(12.5); doc.text(pdfSafe(t), M+30, y); y += 14;
+    if(sub){ doc.setTextColor(...MUTED); doc.setFont("helvetica","normal"); doc.setFontSize(9); const sl = doc.splitTextToSize(pdfSafe(sub), W); doc.text(sl, M, y+2); y += sl.length*11 + 2; } };
+  const label = t => { need(30); doc.setTextColor(...INK); doc.setFont("helvetica","bold"); doc.setFontSize(9.5); const tl = doc.splitTextToSize(pdfSafe(t), W); doc.text(tl, M, y+12); y += tl.length*12 + 2; };
+  const circles = opts => { need(24); y += 16; doc.setFont("helvetica","normal"); doc.setFontSize(9.5); doc.setTextColor(...INK);
+    let x = M; opts.forEach(o=>{ const t = `${o.id}  ${o.name}`; doc.setDrawColor(...MUTED); doc.circle(x+6, y-3.5, 6.5); doc.text(pdfSafe(t), x+16, y); x += 16 + doc.getTextWidth(pdfSafe(t)) + 18; }); y += 8; };
+
+  doc.setFillColor(...RED); doc.rect(0,0,612,70,"F");
+  doc.setTextColor(255,255,255); doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.text("MKTG 44303 | FRIDAY SIMULATION WORKSHEET", M, 28);
+  doc.setFont("helvetica","bold"); doc.setFontSize(19); doc.text(pdfSafe(CASE.title), M, 52);
+  y = 96; doc.setTextColor(...INK); doc.setFont("helvetica","normal"); doc.setFontSize(10);
+  doc.text("Name ________________________________________     Section ________     Date ______________", M, y);
+  y += 16; doc.setTextColor(...MUTED); doc.setFontSize(9);
+  const intro = doc.splitTextToSize("Write your own thinking before the class decides. Completed thoughtfully, this worksheet earns the 10 points for today. Turn it in on your way out.", W); doc.text(intro, M, y); y += intro.length*11 + 6;
+
+  head(1, "The full loop", `One ${CASE.retailer} fact for each stage.`+" Then circle the stage where the loop is strongest and box the one where it's weakest.");
+  CASE.stages.forEach(s=>{ need(24); y += 20; doc.setTextColor(...INK); doc.setFont("helvetica","bold"); doc.setFontSize(9.5); doc.text(s.name, M, y);
+    doc.setDrawColor(...RULE); doc.line(M+92, y+2, M+W, y+2); });
+  y += 10;
+
+  [0,1].forEach(i=>{
+    const D = CASE.decisions[i];
+    head(i+2, `${D.label}: ${D.title}`, i===0 ? D.memo : "The strategy shock. " + D.memo);
+    label("My vote, before the class decides (circle one):"); circles(D.options);
+    label("Why: brand fit, who wins and who pays, and the risk."); lines(3);
+    label("Which stage do I think this hits first?"); lines(1);
+    label("After the ripple: what did the class's choice do to Advocacy and Lifetime Value?"); lines(2);
+  });
+
+  head(4, `My recommendation to ${CASE.boardName}`, "Write your own before the class builds one together. Lead with the position.");
+  lines(4);
+  label("The stage it acts on, and what it does to the rest of the loop:"); lines(2);
+
+  head(5, "Exit ticket, on my own");
+  CASE.exit.forEach((q,n)=>{ label(`${n+1}. ${q}`); lines(2); });
+
+  const n = doc.getNumberOfPages();
+  for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...MUTED); doc.text(`Page ${i} of ${n}`, M, PHt-24); }
+  return doc.output("blob");
+}
+
+function fileBase(){ return `${CASE.retailer}_Simulation_${(S.group||"Record").replace(/[^a-z0-9]+/gi,"_").replace(/^_|_$/g,"")}`; }
+async function saveBlob(blob, name){
+  if(LIVE.dl){ await LIVE.dl.save({filename:name, data:blob}); return; }
+  const url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+async function download(kind, btn, msgEl){
+  btn.disabled = true; msgEl.textContent = "Building your file…";
+  try{
+    if(kind==="worksheet"){ await saveBlob(await buildWorksheet(), `${CASE.retailer}_Simulation_Worksheet.pdf`); msgEl.textContent = "Downloaded. Print one per student."; }
+    else { await saveBlob(kind==="pdf" ? await buildPDF() : await buildDOCX(), `${fileBase()}.${kind}`); msgEl.textContent = isClass() ? "Downloaded." : "Downloaded. Upload it to this week's Blackboard assignment."; }
+  }catch(e){
+    msgEl.textContent = (e && e.message==="load") ? "The file builder didn't load. Check the connection and try again." : "That download didn't work. Try again, or copy the text instead.";
+  }finally{ btn.disabled = false; }
+}
+window.__simBuild = {buildPDF, buildDOCX, buildWorksheet};
+
+/* ---------- guide drawer ---------- */
+function openGuide(){
+  const G = CASE.guide;
+  $("#drawer").innerHTML = `<div class="row" style="justify-content:space-between"><h3>This week's material</h3><button class="btn ghost" type="button" id="closeGuide">Close</button></div>
+    <p class="gate" style="margin-top:6px">Monday and Wednesday, in one place.</p>
+    <h4>Monday · The four retail pillars</h4>
+    <div style="overflow-x:auto"><table><thead><tr><th>Element</th><th>What ${esc(CASE.retailer)} does</th><th>Why it's strategic</th></tr></thead><tbody>${G.pillars.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody></table></div>
+    <h4>Monday · The customer</h4><p>${esc(G.customer)}</p>
+    <h4>Monday · Positioning map</h4><p>${esc(G.map)}</p>
+    <h4>Purpose · the authenticity test</h4><p>${esc(G.authenticity)}</p>
+    <h4>Zoom-in</h4><p>${esc(G.zoom)}</p>
+    <h4>Wednesday · PESTLE</h4><ul>${G.pestle.map(r=>`<li><b>${esc(r[0])}:</b> ${esc(r[1])}</li>`).join("")}</ul>
+    <h4>Wednesday · Strategy shocks</h4><ul>${G.shocks.map(r=>`<li><b>${esc(r[0])}.</b> ${esc(r[1])}</li>`).join("")}</ul>
+    <h4>The three standing questions</h4><ul>${G.questions.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <h4>Sources</h4><ul>${G.sources.map(([t,u])=>`<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul>`;
+  $("#drawer").classList.add("open"); $("#scrim").classList.add("open"); $("#closeGuide").focus();
+}
+function closeGuide(){ $("#drawer").classList.remove("open"); $("#scrim").classList.remove("open"); }
+$("#guideBtn").addEventListener("click", openGuide);
+$("#scrim").addEventListener("click", closeGuide);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeGuide(); $("#dialog").classList.remove("open"); } });
+
+/* ---------- render + events ---------- */
+function render(){
+  if(S.phase >= PH().length) S.phase = PH().length - 1;
+  renderChrome(); renderSteps(); renderSide(); tick();
+  const views = {setup:vSetup, brief:vBrief, d1:()=>vDecision(0), r1:()=>vRipple(0), d2:()=>vDecision(1), r2:()=>vRipple(1), board:vBoard, share:vShare, exit:vExit, log:vLog};
+  const active = document.activeElement && document.activeElement.id;
+  $("#main").innerHTML = views[phaseKey()]();
+  if(active){ const el = document.getElementById(active); if(el && (el.tagName==="TEXTAREA"||el.tagName==="INPUT")) el.focus(); }
+  refreshGates();
+}
+document.addEventListener("click", e=>{
+  const t = e.target.closest("button, a"); if(!t) return;
+  if(t.dataset.guide){ e.preventDefault(); openGuide(); return; }
+  if(t.id==="restartLink"){ e.preventDefault(); $("#dialog").classList.add("open"); $("#dlgNo").focus(); return; }
+  if(t.id==="dlgNo"){ $("#dialog").classList.remove("open"); return; }
+  if(t.id==="dlgYes"){ const mode = S.mode; S = fresh(); S.mode = MODES.includes(mode) ? mode : MODES[0]; try{ localStorage.removeItem(STORE_KEY); }catch(_){} $("#dialog").classList.remove("open"); render(); return; }
+  if(t.id==="dlWorksheet"){ download("worksheet", t, $("#wsMsg")); return; }
+  if(t.id==="startBtn"){ if(!S.startTs) S.startTs = Date.now(); goKey("brief"); return; }
+  if(t.dataset.q !== undefined && t.dataset.a !== undefined){ const i = +t.dataset.q; if(S.recall.answers[i]!==undefined) return; S.recall.answers[i] = +t.dataset.a; save(); render(); return; }
+  if(t.id==="briefNext"){ goKey("d1"); return; }
+  if(t.dataset.opt){ const [k,id] = t.dataset.opt.split("|"); if(S[k].locked) return; S[k].choice = id; save(); render(); return; }
+  if(t.id==="lock-d1"){ S.d1.locked = true; goKey("r1"); liveRipple(0); return; }
+  if(t.id==="lock-d2"){ S.d2.locked = true; goKey("r2"); liveRipple(1); return; }
+  if(t.dataset.askq){ const [k,who,qi] = t.dataset.askq.split("|"), st = S[k]; if(st.asks.length>=2) return;
+    const qa = CASE.decisions[k==="d1"?0:1].asks[who][+qi]; st.asks.push({who, qi:+qi, q:qa[0], a:qa[1]}); save(); render(); return; }
+  if(t.id==="next-d1"){ goKey("d2"); return; }
+  if(t.id==="next-d2"){ goKey("board"); return; }
+  if(t.id==="boardSubmit"){ if(aiOn()){ S.board._waiting = true; save(); render(); liveChallenge(); } else { S.board.challenge = fallbackChallenge(); save(); render(); } return; }
+  if(t.id==="boardDone"){ S.board.done = true; goKey(isClass() ? "exit" : "share"); return; }
+  if(t.id==="pickSpeaker"){ const here = S.members.filter(m=>!(S.exit[m]&&S.exit[m].absent)); S.share.speaker = here[Math.floor(Math.random()*here.length)] || ""; save(); render(); return; }
+  if(t.id==="shareDone"){ goKey("exit"); return; }
+  if(t.id==="exitDone"){ S.submittedAt = Date.now(); goKey("log"); return; }
+  if(t.id==="dlPdf"){ download("pdf", t, $("#copyMsg")); return; }
+  if(t.id==="dlDocx"){ download("docx", t, $("#copyMsg")); return; }
+  if(t.id==="copyLog"){
+    navigator.clipboard.writeText(logText()).then(()=>{ $("#copyMsg").textContent = "Copied."; })
+      .catch(()=>{ const r = document.createRange(); r.selectNodeContents($("#logText")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("#copyMsg").textContent = "The text is selected; press Ctrl+C or Cmd+C."; });
+    return;
+  }
+});
+/* =========================================================
+   CLAUDE-CONNECTED LAYER (disabled in this static version)
+   Everything below lights up only when the page runs inside claude.ai
+   for a signed-in viewer. It uses only what a free Claude account can do:
+   asking Claude and downloading files. Nothing is stored in the artifact. Without it, the sim behaves like the static version.
+   ========================================================= */
+const LIVE = {ai:null, dl:null, denied:false};
+const aiOn = () => false; // static version: prepared stakeholder answers only
+
+async function ask(prompt, tier="quick"){
+  if(!aiOn()) return null;
+  try{ const r = await LIVE.ai(prompt, {modelTier:tier}); return (r && r.text) ? r.text.trim() : null; }
+  catch(e){ if(e && e.code === "not_granted") LIVE.denied = true; return null; }
+}
+function factsText(upto){
+  return CASE.decisions.slice(0, upto).map(d => `${d.label}: ${d.title}\n` + d.facts.filter(f=>f.t!=="DYNAMIC").map(f=>`- ${f.t}${f.real?"":" (scenario)"}`).join("\n")).join("\n\n");
+}
+function parseJSON(txt){ try{ const m = txt && txt.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null; }catch(e){ return null; } }
+const clamp2 = v => Math.max(-2, Math.min(2, Math.round(+v || 0)));
+
+/* Ripple: stakeholders react to the group's reasoning, and the reasoning nudges the ripple (at most ±2 on two stages and on cash). */
+async function liveRipple(di){
+  const k = di===0 ? "d1" : "d2", st = S[k], o = opt(di, st.choice), ids = Object.keys(o.voices);
+  if(!aiOn()){ return; }
+  st.aiPending = true; save(); render();
+  const people = ids.map(id=>`${id}: ${CASE.personas[id].name}, ${CASE.personas[id].role}. ${CASE.personas[id].stance}`).join("\n");
+  const prior = di===1 ? `Earlier, in Decision 1, the group chose "${opt(0,S.d1.choice).name}".` : "";
+  const prompt = `You run a classroom business simulation for a senior undergraduate retail strategy course (MKTG 44303, University of Arkansas). The course framework is a seven-stage loop: Purpose, Innovation, Value, Outreach, Transfer, Advocacy, Lifetime Value. ${CASE.role} ${CASE.loopNote}
+
+Case facts:
+${factsText(di+1)}
+
+${prior}
+The group chose: "${o.name}": ${o.desc}
+What happens in the simulation: ${o.story}
+They predicted it hits this stage of Quince's loop first: ${stageName(st.first)}.
+
+The group's reasoning:
+- Brand fit: ${st.fit}
+- Stakeholders: ${st.stake}
+- Risk: ${st.risk}
+
+Do two things.
+
+1. Voices. Write one reaction from each stakeholder below, in character, 25 to 45 words, in plain spoken language. Each must respond to something specific in the group's reasoning (agree with it, or push on a claim or a gap) and say what the choice means for that person. These people are fictional. Do not grade the students, mention the course, or invent figures beyond the facts.
+${people}
+
+2. Execution. Judge how well the reasoning would play out in practice. Reward reasoning that names the main risk of their option in these facts and says how they'd handle it. Penalize reasoning that ignores a fact that cuts against their choice. Choose at most two loop stages to nudge by -2 to +2 each (in this case a negative number means more pressure on Quince, which helps the designers), and nudge the collective's cash by -2 to +2. Write one sentence (under 35 words) explaining the nudge, addressed to the group, naming what in their reasoning caused it. If the reasoning is generic, say so plainly and make no positive nudge.
+
+Return only JSON, with no other text:
+{"voices": {${ids.map(id=>`"${id}": "..."`).join(", ")}}, "execution": {"stages": {"O": 0}, "cash": 0, "note": "..."}}
+Stage keys: P, I, V, O, T, A, L.`;
+  const res = parseJSON(await ask(prompt));
+  st.aiPending = false;
+  if(res && res.voices){
+    st.voices = {}; ids.forEach(id => { st.voices[id] = (typeof res.voices[id]==="string" && res.voices[id].trim()) ? res.voices[id].trim() : o.voices[id]; });
+    st.voicesAI = true;
+  }
+  if(res && res.execution){
+    const fx = {}; let n = 0;
+    Object.entries(res.execution.stages||{}).forEach(([s,v]) => { if("PIVOTAL".includes(s) && s.length===1 && n<2 && clamp2(v)){ fx[s] = clamp2(v); n++; } });
+    if(clamp2(res.execution.cash)) fx.health = clamp2(res.execution.cash);
+    st.adj = {fx, note: String(res.execution.note||"").slice(0,300)};
+  }
+  save(); render();
+}
+
+/* Free questions to stakeholders (two per round) */
+async function liveAsk(k){
+  const di = k==="d1"?0:1, st = S[k];
+  const who = document.getElementById("liveWho-"+k).value, q = document.getElementById("liveQ-"+k).value.trim();
+  if(!q || st.asks.length >= 2) return;
+  const p = CASE.personas[who], o = opt(di, st.choice);
+  const entry = {who, q, a:"", ai:true}; st.asks.push(entry); save(); render();
+  const earlier = st.asks.slice(0,-1).filter(a=>a.who===who).map(a=>`They asked you: ${a.q}\nYou said: ${a.a}`).join("\n");
+  const prompt = `You are ${p.name}, ${p.role}, in a classroom business simulation. ${p.stance}
+
+Case facts:
+${factsText(di+1)}
+
+The student consultants chose "${o.name}": ${o.desc}
+What happened: ${o.story}
+You already told them: "${(st.voices&&st.voices[who])||o.voices[who]||""}"
+${earlier}
+
+A student now asks you: "${q}"
+
+Answer in character in 40 to 90 words, plainly and honestly. Use only the facts given; if you don't know something, say what you'd need to find out. Don't lecture or grade, and don't give legal advice beyond what your role would say in conversation. Return only your answer.`;
+  entry.a = (await ask(prompt)) || "(No answer came back. Try again in a moment.)";
+  save(); render();
+}
+
+async function liveChallenge(){
+  const b = S.board, P = CASE.personas.board;
+  const prompt = `You are ${P.name}, ${P.role}, in a classroom business simulation. ${P.stance}
+
+Case facts:
+${factsText(2)}
+
+The student consultants' two decisions: "${opt(0,S.d1.choice).name}", then "${opt(1,S.d2.choice).name}".
+Their recommendation to ${CASE.boardName}:
+${b.rec}
+Stage of Quince's loop it acts on: ${stageName(b.stage)}
+What it does to the rest of the loop: ${b.ripple}
+What the loop misses: ${b.misses}
+
+Ask ONE pointed follow-up question, 20 to 45 words, aimed at the weakest part of their case: the brand and marketing logic for the designers (not ethics alone), who pays (the five studios' cash, their premium, their boutique partners), what it does to Quince's loop and to the designers' customers, or what could go wrong. Speak directly to them. Return only the question.`;
+  const txt = await ask(prompt, "default");
+  b.challenge = (txt && txt.length > 10) ? txt.replace(/^["“]|["”]$/g,"") : fallbackChallenge();
+  b.challengeAI = !!txt; b._waiting = false; save(); render();
+}
+
+async function liveCoach(){
+  const btn = document.getElementById("coachBtn"); if(btn){ btn.disabled = true; btn.textContent = "Reading your log…"; }
+  const prompt = `You coach student groups in a senior retail strategy course. The course uses a seven-stage loop: Purpose, Innovation, Value, Outreach, Transfer, Advocacy, Lifetime Value.
+
+Strong recommendations: ${CASE.debrief.strong.join("; ")}.
+Weak recommendations: ${CASE.debrief.weak.join("; ")}.
+
+The group's decision log:
+${logText()}
+
+Write exactly three bullets, one sentence each, starting with "- ": one specific strength, one specific gap, and one question for the group to carry into next week. Plain language, under 90 words total. Return only the bullets.`;
+  S.coach = (await ask(prompt, "default")) || "Feedback isn't available right now. Use the strong and weak lists above to check your log.";
+  save(); render();
+}
+
+document.addEventListener("click", e=>{
+  const t = e.target.closest("button, a"); if(!t) return;
+  if(t.dataset.liveask){ liveAsk(t.dataset.liveask); }
+  else if(t.dataset.suggest){ const [k,q] = [t.dataset.suggest, t.dataset.q]; const inp = document.getElementById("liveQ-"+k); if(inp){ inp.value = q; inp.focus(); } const sel = document.getElementById("liveWho-"+k); if(sel && t.dataset.who) sel.value = t.dataset.who; }
+  else if(t.id==="coachBtn"){ liveCoach(); }
+});
+document.addEventListener("keydown", e=>{ const id = e.target && e.target.id || ""; if(e.key==="Enter" && id.startsWith("liveQ-")){ e.preventDefault(); liveAsk(id.slice(6)); } });
+
+
+render();
+
+</script>
+</body>
+</html>
