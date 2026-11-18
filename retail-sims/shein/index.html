@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shein: The Bill Comes Due</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+
+/* Layout idea: a working case room. Left = the current step; right = the loop, always visible, so every choice shows its ripple. */
+:root{
+  --red:#9D2235; --red-dk:#7A1A28; --blossom:#F3D8DC; --rose:#FCF4F5;
+  --bg:#FAF7F7; --surface:#FFFFFF; --ink:#1E191A; --muted:#625659; --line:#E5D6D8;
+  --good:#2F7A5F; --down:#B4501A; --good-bg:#E4F2EC; --down-bg:#FBEBE1;
+  --display:"Playfair Display", Georgia, serif;
+  --body:"DM Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono:"DM Mono", ui-monospace, Menlo, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --red:#E06A82; --red-dk:#F08DA0; --blossom:#3A2228; --rose:#241A1C;
+    --bg:#151112; --surface:#1E1819; --ink:#F2EBEC; --muted:#B5A7AA; --line:#3A2F31;
+    --good:#6CC6A0; --down:#F0985E; --good-bg:#1C3029; --down-bg:#3A2619;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --red:#E06A82; --red-dk:#F08DA0; --blossom:#3A2228; --rose:#241A1C;
+  --bg:#151112; --surface:#1E1819; --ink:#F2EBEC; --muted:#B5A7AA; --line:#3A2F31;
+  --good:#6CC6A0; --down:#F0985E; --good-bg:#1C3029; --down-bg:#3A2619;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h2{font-size:1.65rem}
+h3{font-size:1.15rem}
+p{margin:0}
+button{font:inherit}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* top bar */
+.bar{background:var(--red-dk);color:#fff;padding:10px 20px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+:root[data-theme="dark"] .bar{background:#4A1520}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bar{background:#4A1520}}
+.bar .course{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.bar .case{font-family:var(--display);font-size:1.25rem}
+.bar .meta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.clock{font-family:var(--mono);font-size:1.35rem;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.12);padding:2px 10px;border-radius:6px}
+.clock.late{background:#F4BFC6;color:#5a0f1c}
+.chipbtn{background:transparent;border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.85rem}
+.chipbtn:hover{background:rgba(255,255,255,.12)}
+
+/* stepper */
+.steps{display:flex;gap:4px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--line);overflow-x:auto}
+.step{flex:1 0 auto;min-width:84px;font-size:.78rem;color:var(--muted);padding:6px 4px 4px;border-top:3px solid var(--line);white-space:nowrap}
+.step b{display:block;font-family:var(--mono);font-weight:500;font-size:.72rem}
+.step.done{border-top-color:var(--red);color:var(--ink)}
+.step.now{border-top-color:var(--red);color:var(--red);font-weight:700}
+
+.wrap{max-width:1180px;margin:0 auto;padding:22px 20px 60px;display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:24px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+.main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.side{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:900px){.side{position:static}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+.eyebrow{font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--red);font-weight:700}
+.lede{color:var(--muted);max-width:68ch}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.target{font-family:var(--mono);font-size:.8rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+
+.memo{border-left:4px solid var(--red);background:var(--rose);padding:14px 16px;border-radius:0 8px 8px 0}
+.memo .from{font-size:.82rem;color:var(--muted);margin-bottom:6px}
+.facts{counter-reset:f;list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.facts li{counter-increment:f;display:grid;grid-template-columns:30px 1fr;gap:8px;padding:9px 10px;border-radius:6px}
+.facts li:nth-child(odd){background:var(--rose)}
+.facts li::before{content:counter(f);font-family:var(--mono);color:var(--red);font-weight:500}
+.tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:1px}
+.tag.real{background:var(--good-bg);color:var(--good)}
+.tag.scen{background:var(--blossom);color:var(--red-dk)}
+
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+.opt:hover{border-color:var(--red)}
+.opt.sel{border-color:var(--red);background:var(--rose)}
+.opt .k{font-family:var(--mono);color:var(--red);font-size:.8rem}
+.opt strong{font-size:1rem}
+.opt span{font-size:.9rem;color:var(--muted)}
+.opt[disabled]{cursor:default}
+
+label{font-weight:700;font-size:.92rem;display:block;margin-bottom:4px}
+.hint{font-weight:400;color:var(--muted);font-size:.84rem}
+textarea,input[type=text],select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+textarea{min-height:76px;resize:vertical}
+textarea:focus,input:focus,select:focus{border-color:var(--red);outline:none;box-shadow:0 0 0 3px var(--blossom)}
+.count{font-family:var(--mono);font-size:.74rem;color:var(--muted);text-align:right}
+.count.ok{color:var(--good)}
+
+.btn{background:var(--red);color:#fff;border:0;border-radius:8px;padding:11px 18px;font-weight:700;cursor:pointer}
+:root[data-theme="dark"] .btn{color:#1a0d10}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{color:#1a0d10}}
+.btn:hover{filter:brightness(1.08)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{background:transparent;color:var(--red);border:1px solid var(--red)}
+.gate{font-size:.85rem;color:var(--muted)}
+
+/* quiz */
+.q{border:1px solid var(--line);border-radius:10px;padding:14px}
+.q .qopts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.q button.a{text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;color:var(--ink)}
+.q button.a:hover:not([disabled]){border-color:var(--red)}
+.q button.a.right{background:var(--good-bg);border-color:var(--good)}
+.q button.a.wrong{background:var(--down-bg);border-color:var(--down)}
+.q button.a[disabled]{cursor:default}
+.why{margin-top:8px;font-size:.9rem;color:var(--muted)}
+.why b{color:var(--ink)}
+
+/* ripple */
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.d{font-family:var(--mono);font-size:.82rem;padding:1px 7px;border-radius:999px;font-variant-numeric:tabular-nums}
+.d.up{background:var(--good-bg);color:var(--good)}
+.d.dn{background:var(--down-bg);color:var(--down)}
+.d.zero{color:var(--muted)}
+.voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.voice{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg)}
+.voice .who{font-weight:700;font-size:.9rem}
+.voice .role{font-size:.78rem;color:var(--muted);margin-bottom:6px}
+.voice p{font-size:.94rem}
+.ai-note{font-size:.78rem;color:var(--muted)}
+.thinking{color:var(--muted);font-style:italic}
+.chat{display:flex;flex-direction:column;gap:8px}
+.chat .m{padding:9px 12px;border-radius:8px;max-width:90%}
+.chat .m.us{background:var(--blossom);align-self:flex-end}
+.chat .m.them{background:var(--bg);border:1px solid var(--line)}
+.callout{background:var(--blossom);border-radius:8px;padding:12px 14px;font-size:.94rem}
+
+/* side loop */
+.loopcard h3{font-size:1rem;font-family:var(--body);font-weight:700}
+.loopcard svg{width:100%;height:auto;display:block}
+.meter{display:flex;flex-direction:column;gap:4px}
+.meter .lab{display:flex;justify-content:space-between;font-size:.84rem}
+.meter .lab .v{font-family:var(--mono)}
+.track{height:8px;background:var(--line);border-radius:999px;overflow:hidden}
+.fill{height:100%;background:var(--red);border-radius:999px}
+.attrib{font-size:.68rem;color:var(--muted);line-height:1.35}
+
+/* drawer */
+.drawer{position:fixed;inset:0 0 0 auto;width:min(560px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:-12px 0 30px rgba(0,0,0,.15);padding:22px;overflow-y:auto;z-index:20;display:none}
+.drawer.open{display:block}
+.drawer h4{font-family:var(--body);font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;color:var(--red);margin:18px 0 6px}
+.drawer ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.drawer a{color:var(--red)}
+.scrim{position:fixed;inset:0;background:rgba(20,10,12,.35);z-index:19;display:none}
+.scrim.open{display:block}
+
+.dialog{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:30;background:rgba(20,10,12,.4);padding:16px}
+.dialog.open{display:flex}
+.dialog .card{max-width:440px}
+
+pre.log{white-space:pre-wrap;font-family:var(--mono);font-size:.8rem;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;max-height:420px;overflow:auto}
+.banner{font-size:.85rem;background:var(--blossom);color:var(--ink);border-radius:8px;padding:10px 14px}
+.member{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.member.absent{opacity:.55}
+.foot{max-width:1180px;margin:0 auto;padding:0 20px 30px;font-size:.78rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}
+.foot a{color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.barrow{display:grid;grid-template-columns:180px 1fr 40px;gap:10px;align-items:center;font-size:.9rem}
+.barrow .track{height:14px}
+.barrow .n{font-family:var(--mono);text-align:right}
+@media (max-width:500px){.barrow{grid-template-columns:110px 1fr 30px}}
+body.classmode{font-size:18px}
+body.classmode .lede{max-width:none}
+.btn.askq{text-align:left;font-weight:500;padding:8px 12px}
+.pill{font-size:.75rem;border-radius:999px;padding:1px 8px;background:var(--rose);border:1px solid var(--line);white-space:nowrap}
+/* ---- Shein solo additions ---- */
+.sb{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+@media (max-width:600px){.grid2{grid-template-columns:1fr}}
+ol.plan{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+ol.flywheel{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:4px}
+ol.flywheel li::marker{color:var(--red);font-family:var(--mono)}
+ul.since{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.panel h3{color:var(--ink)}
+details.clips{border:1px solid var(--line);border-radius:8px;padding:10px 14px;background:var(--bg)}
+details.clips summary{cursor:pointer;font-weight:700;color:var(--red)}
+details.clips ul{margin:8px 0 0;padding-left:18px}
+details.clips a{color:var(--red)}
+.askers{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.asker{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg);display:flex;flex-direction:column;gap:4px}
+.asker .who{font-weight:700;font-size:.92rem}
+.asker .role{font-size:.78rem;color:var(--muted)}
+.qlist{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.btn.askq{font-size:.88rem;line-height:1.35}
+.btn.askq[disabled]{opacity:.6}
+.facts li > span{display:block}
+.whocard h3{font-size:1.05rem;font-family:var(--body);font-weight:700}
+.subh{margin:16px 0 8px}
+.mrows{display:flex;flex-direction:column;gap:10px}
+.mrow .lab{display:flex;justify-content:space-between;gap:8px;font-size:.84rem;margin-bottom:4px}
+.mrow .lab .v{font-family:var(--mono);white-space:nowrap}
+.fill.cost{background:var(--red)}
+.fill.biz{background:var(--muted)}
+.d.good{background:var(--good-bg);color:var(--good)}
+.d.bad{background:var(--down-bg);color:var(--down)}
+.flag{display:inline-block;font-size:.7rem;font-weight:700;padding:0 6px;border-radius:999px;background:var(--down-bg);color:var(--down);white-space:nowrap}
+.movedbox{border:1px dashed var(--down);border-radius:8px;padding:10px 12px;font-size:.88rem;background:var(--down-bg);margin-top:12px}
+.movedbox ul{margin:6px 0 0;padding-left:18px}
+.testline{font-size:.86rem;font-weight:700;margin-top:12px}
+table.chg tr.sep th{padding-top:14px}
+.callout.combo{background:var(--rose);border-left:4px solid var(--red)}
+.voice ul{margin:6px 0 0;padding-left:18px}
+.drawer p{margin:0 0 8px}
+.drawer ol{margin:0 0 8px;padding-left:20px}
+[tabindex="-1"]:focus{outline:none}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div>
+    <div class="course">MKTG 44303 · Simulation · Individual</div>
+    <div class="case">Shein: The Bill Comes Due</div>
+  </div>
+  <div class="meta">
+    <span id="nameLabel" class="pill" style="background:rgba(255,255,255,.12);color:#fff;border-color:transparent"></span>
+    <span class="clock" id="clock" title="Time on task while this page is open">00:00</span>
+    <button class="chipbtn" id="guideBtn" type="button">Briefing</button>
+  </div>
+</header>
+<nav class="steps" id="steps" aria-label="Simulation steps"></nav>
+
+<div class="wrap">
+  <main class="main" id="main"></main>
+  <aside class="side" aria-label="Scoreboard">
+    <section class="card whocard" id="sideCard"></section>
+  </aside>
+</div>
+
+<footer class="foot">
+  <span>Your work saves in this browser. Finish on the same device and browser.</span>
+  <a href="#" id="restartLink">Restart simulation</a>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Briefing"></aside>
+
+<div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+  <div class="card stack">
+    <h3 id="dlgTitle">Restart the simulation?</h3>
+    <p class="lede">This erases everything you've written in this browser. Download your record first if you need it.</p>
+    <div class="row"><button class="btn" id="dlgYes" type="button">Restart</button><button class="btn ghost" id="dlgNo" type="button">Keep going</button></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CASE CONTENT: Shein, Fall 2026 test run (individual makeup sim)
+   Framework: Externalized Costs Analysis. No PIVOTAL.
+   Every response is scripted here; nothing calls an AI.
+   ========================================================= */
+const CASE = {
+  id: "shein-fall26-solo",
+  retailer: "Shein",
+  title: "Shein: The Bill Comes Due",
+  kicker: "MKTG 44303 · Simulation · Individual",
+  bigQuestion: "What happens when we want cheap stuff more than we care where it comes from? Are consumers the problem, or is the system broken?",
+  role: "You are Shein's U.S. president, late 2026.",
+
+  costs: [
+    {id:"labor", name:"Labor", who:"workers"},
+    {id:"env", name:"Environmental", who:"ecosystems and future generations"},
+    {id:"community", name:"Community", who:"designers and local businesses"},
+    {id:"consumer", name:"Consumer", who:"buyers, after the sale"}
+  ],
+  biz: [
+    {id:"sales", name:"U.S. sales"},
+    {id:"price", name:"Price advantage"},
+    {id:"investors", name:"Investor confidence"}
+  ],
+  baseline: {labor:85, env:85, community:70, consumer:70, sales:55, price:70, investors:50},
+
+  personas: {
+    mei:    {name:"Mei Lin", role:"Garment worker at a Guangzhou supplier, paid by the piece (fictional)"},
+    ana:    {name:"Ana Ruiz", role:"Independent designer whose work was copied (fictional)"},
+    jordan: {name:"Jordan Hale, 19", role:"Shein customer on a tight budget, who loves Shein (fictional)"},
+    priya:  {name:"Priya Desai", role:"Fund manager who bought Shein shares at the IPO (fictional)"},
+    dana:   {name:"Dana Cole", role:"Labor-rights researcher (fictional)"}
+  },
+  room: ["mei","ana","jordan","priya"],
+
+  /* ---------- What you missed ---------- */
+  brief: {
+    intro: "You missed Monday and Wednesday, when the class watched Channel 4's “Untold: Inside the Shein Machine” (2022) and stopped six times to discuss it. This briefing gives you what the film showed and what the class concluded. Read it closely: the decisions ahead use all of it.",
+    clips: {
+      note: "Optional, if you have time and YouTube works for you: watch the parts of the film the class discussed most. Turn captions on; prices are in pounds (a £4 top is about $5).",
+      links: [
+        ["The buying end: how Shein sells (5:14 to 24:33)", "https://www.youtube.com/watch?v=qpClEvsjW0s&t=314s"],
+        ["Fern's copied design and the factory (24:33 to 34:01)", "https://www.youtube.com/watch?v=qpClEvsjW0s&t=1473s"],
+        ["Clothes no one can resell, and Shein's answer (34:01 to the end)", "https://www.youtube.com/watch?v=qpClEvsjW0s&t=2041s"]
+      ]
+    },
+    panels: [
+      {h:"1 · The machine: how does a £4 top exist?",
+       p:["Shein was founded in 2008 in Nanjing, China. It has no stores. It sells online, straight from a network of about 6,000 small supplier factories centered on Guangzhou. It adds thousands of new styles a day; Zara adds about 12,000 a year.",
+          "The engine is a test-and-reorder system the class built as a flywheel (LATR):"],
+       steps:["An algorithm scans social media for emerging trends","A micro-batch is commissioned: 100 to 200 units from a factory partner","The items go up on the app as a live test","Demand is measured within days","Hits are reordered at volume; misses are quietly dropped","The fastest, cheapest factories get the next order"],
+       after:["This is genuine innovation. Harvard's John Deighton argues Shein is a platform matching demand signals to factory capacity, not a retailer. The class held onto that, and then asked: step 2 needs factories on standby, and step 5 needs them to ramp up overnight. What does that ask of the people in them?"]},
+      {h:"2 · The buying end: how Shein sells (Monday)",
+       p:["Safia, 17, works in a café to fund her shopping. A top she loved cost about £38 elsewhere; Shein's near-copy cost about £4. She lives in a small town where she stands out anyway, so she may as well look good doing it. The class treated her reasons as good reasons: clothes as identity, at a price she can afford.",
+          "A researcher in the film counted dark patterns on fast-fashion sites (countdown timers, coupon stacks, infinite scroll, add-on discounts), and Shein came out far ahead of every other site. The class asked: is the choice to buy free, or engineered? The shopper brings the budget, the identity and the taste. The app brings the timers, the drops and the urgency.",
+          "Shein's marketing runs on micro-influencers paid in product: about five free items and a 15% discount code. Some are teenagers. Agencies coach creators to post three times a day for a chance at paid deals later.",
+          "Inside the first factory: no pay for the first month, fines for mistakes that cost a large share of a day's pay, and 14-hour shifts still running at 10 p.m."],
+       callout:"Monday's close: Shein's speed is real innovation, and it depends on people at both ends who carry more than their share of the cost. Creators are paid in clothes; workers are paid by the piece and fined for mistakes."},
+      {h:"3 · The framework: Externalized Costs Analysis (Wednesday)",
+       p:["An externalized cost is a real cost transferred to people who did not agree to bear it. It isn't avoided; it's shifted. A low price can reflect real efficiency, or it can reflect someone else paying the difference."],
+       table:{head:["Category","Who bears it","Where it showed up this week"],
+         rows:[["Labor","Workers","Piece rates, fines, 14- to 18-hour days (film); 75-hour weeks still standard in 2024 (Public Eye)"],
+               ["Environmental","Ecosystems and future generations","About 150 billion garments made a year; clothes a charity can't resell (film); 16.7 million tonnes of CO₂ in 2023 (Shein's own data)"],
+               ["Community","Designers and local businesses","Fern's copied lace set (film); a federal racketeering suit over design copying; the duty-free exemption competitors didn't get"],
+               ["Consumer","Buyers, after the sale","Dark patterns and fake urgency; clothes built for one wear; chemical test findings; France's €40M fine over fake discounts"]]},
+       callout:"The test: remove the externalization. Does the advantage survive? If it doesn't, the externalization isn't a failure of the model. It is the model."},
+      {h:"4 · The making end: who pays (Wednesday)",
+       p:["Fern, an independent designer, sold a handmade lace set for about £65 to £70; each one takes about 3.5 hours to make. Shein's near-identical copy sold for £4 to £7. After she posted about it, Shein pulled the listing, sent her an email address, and never replied. In the same part of the film, one worker earned about £19 for an 18-hour day.",
+          "A resale charity now receives a high share of fast fashion, some of it never worn, and says Shein items can't be resold because they were so cheap to begin with. Shein sometimes refunds a return and lets the customer keep the item, because shipping it back costs more than the garment.",
+          "In the second factory, workers were paid by the piece with no base salary and typically got one day off a month.",
+          "At the end of the film, Shein answers: its model is built on on-demand production, and its unsold inventory is in the single digits, against 25 to 40% for the industry. The class argued Shein's side first and conceded it: per item, Shein wastes less. Then came the LATR paradox: efficient per item, plus unlimited items tested, equals more total production, not less."],
+       callout:"Wednesday's key insight: Shein has the infrastructure of accountability (a code of conduct, third-party audits, a sustainability report), and it didn't change what happens on the factory floor. Accountability is necessary, but it isn't enough when the business model depends on the very cost it's meant to prevent."},
+      {h:"5 · Since the film (2022 to now)",
+       list:["Dec 2022: Shein said both factories in the film broke local working-hour limits, cut their orders, and pledged $15 million for supplier factories.",
+             "2024: Public Eye still found 75-hour weeks standard, and the audits Shein commissioned didn't count working hours.",
+             "May 2025: the U.S. ended duty-free entry for small parcels from China. July 2026: Europe added a €3 per-item duty.",
+             "Sept 2026: Shein listed in Hong Kong at about $26B, down from a $98B private valuation in 2022."],
+       callout:"The class's question: which of these change Shein's economics, and which only change its PR? Keep it in mind. You'll need it."}
+    ],
+    claims: {
+      intro:"In class, we discussed two claims Shein makes about itself. Neither has a settled answer. For each one, argue Shein's side first, then test it with the framework.",
+      field:"What's true in this claim, and what does it leave out?",
+      items:[
+        {id:"c1", label:"Sustainability", claim:"Shein argues it is one of the most sustainable fashion companies because its on-demand model matches supply to demand: it makes small batches, reorders only what sells, and leaves little unsold.",
+         prompts:"Questions to consider: What does this claim measure, and what doesn't it measure? Where does the demand come from?"},
+        {id:"c2", label:"Purpose", claim:"Shein argues it is purpose-driven because its technology democratizes fashion. Its stated purpose is to “make the beauty of fashion accessible to all.”",
+         prompts:"Questions to consider: Accessible to whom? Who pays for that access? What happens to it under the removal test?"}
+      ]
+    }
+  },
+
+  check: [
+    {q:"In Shein's test-and-reorder system, what happens after a micro-batch of a new style goes up on the app?",
+     a:["It is restocked for a full season, so the factory can plan its production months ahead","Demand is measured within days; hits are reordered at volume and misses are quietly dropped","It is sent to influencers first, and only styles they post about are listed for shoppers","It is priced higher at first, then marked down slowly until the whole batch sells out"], c:1,
+     why:"Small bets, fast reads, big reorders. That is the real innovation, and step 5 is where factories have to ramp up overnight."},
+    {q:"In Monday's half of the film, how were Shein's micro-influencers paid?",
+     a:["A flat cash fee for every post, set by the agency","A commission on every sale their link produced","Mostly in product: about five free items and a 15% discount code","They weren't paid; posting was a condition of a shopping discount"], c:2,
+     why:"Paid in clothes. Monday's close: both ends of the business run on people who aren't fully paid."},
+    {q:"A charity can't resell a Shein top that was worn once, so it ends up in a landfill. Which category of externalized cost is that?",
+     a:["Labor","Environmental","Community","Consumer"], c:1,
+     why:"The landfill, the emissions and the next generation carry it. Ecosystems and future generations bear environmental costs."},
+    {q:"What changed in May 2025?",
+     a:["France fined Shein €40 million over fake discounts","Shein listed its shares in Hong Kong","The U.S. ended duty-free entry for small parcels from China","Shein admitted two factories broke working-hour limits"], c:2,
+     why:"Until then, U.S. packages under $800 came in duty-free. Decision 1 starts there."}
+  ],
+
+  /* ---------- Decisions ---------- */
+  text: {
+    predict: "Before you lock it in: which cost category will this decision move most?",
+    pays: "Who pays? Which costs does this stop pushing onto others, which does it keep, and which does it only move?",
+    risk: "What could go wrong, and what would have to be true for this to work?",
+    test: "Run the test. Which cost did this decision stop pushing onto others, which did it keep, and which did it only move? Did Shein's advantage survive?"
+  },
+  decisions: [
+    {
+      id:"d1", label:"Decision 1",
+      title:"The bill comes due. What does Shein compete on now?",
+      guideRef:"Friday case prompt, “The Bill Comes Due”",
+      fit:"Name the real advantage. Under this plan, what does Shein compete on, and why would customers still choose it?",
+      from:"Shein's board · late 2026",
+      memo:"Shein says its purpose is to “make the beauty of fashion accessible to all,” and the technology behind that claim is real. But part of the low price was never the technology. Until 2025, U.S. packages under $800 came in duty-free. When that ended, Shein raised prices and its U.S. sales fell. Growth has nearly stopped, and Shein went public in Hong Kong at a quarter of its 2022 value. The board wants your plan for the U.S.: what does Shein compete on now?",
+      facts:[
+        {t:"Shein's stated purpose is to “make the beauty of fashion accessible to all.”", real:true},
+        {t:"Shein tests new styles in small batches and reorders only hits. It says its unsold inventory is in the single digits; the industry's is 25 to 40%.", real:true},
+        {t:"Shein adds thousands of new styles a day. Zara adds about 12,000 a year.", real:true},
+        {t:"Until May 2025, U.S. packages under $800 entered duty-free. Europe added a €3 per-item duty in July 2026. The U.S. and Europe were about 60% of Shein's 2025 revenue.", real:true},
+        {t:"After the change, Shein raised U.S. prices. Its observed U.S. sales fell 23% in one week and were down about 8% year over year by September 2025.", real:true},
+        {t:"Revenue growth slowed from about 20% (2024) to 8% (2025) to about 1% (early 2026). Net income fell 39% in 2025.", real:true},
+        {t:"Shein's response so far: more U.S. warehouses, factories in Turkey and Brazil, and Xcelerator, which sells its on-demand system to other brands.", real:true},
+        {t:"In 2022 Shein admitted both factories in the film broke local working-hour limits and pledged $15 million. In 2024, investigators still found 75-hour weeks.", real:true},
+        {t:"Shein tried to list in New York (2023), then London (2024–25). It listed in Hong Kong in September 2026 at about $26 billion, down from $98 billion in 2022.", real:true}
+      ],
+      options:[
+        {id:"A", name:"Defend the low price", desc:"Absorb the new duties, push suppliers for lower piece prices, and add more daily drops, flash sales and coupons to win back volume.",
+         fx:{sales:6, price:4, investors:2, labor:7, env:5, community:2, consumer:5}, key:"labor",
+         story:"Prices drop back toward where they were, and the app gets louder: more drops, more countdowns, more coupons. U.S. orders win back part of what they lost. Suppliers accept the lower piece price because Shein is their biggest customer, and they make it up the only way they can: longer days. Margins stay thin, because Shein now pays the duty it used to skip without charging more to cover it.",
+         later:"Shein defended the low price by pushing more of its costs onto the people who make and buy the clothes.",
+         voices:{mei:"A lower piece price means I sew more pieces to earn the same. That's two more hours a day, maybe three.",
+                 ana:"More drops means more of everything copied, faster. Mine included.",
+                 jordan:"Honestly? Great. My budget didn't get any bigger when the duties came in.",
+                 priya:"Sales came back a little; margins didn't. You're paying the duty and charging less. How long does that last?"}},
+        {id:"B", name:"Become the platform", desc:"Grow Xcelerator: sell Shein's on-demand testing and factory network to other brands, and make that the growth story instead of Shein's own low prices.",
+         fx:{sales:-2, price:0, investors:8, labor:0, env:0, community:0, consumer:0}, key:"moved",
+         moved:[["labor","to factories now sewing for Xcelerator's client brands"],["env","to other brands' products, made the same way"]],
+         story:"Two mid-size U.S. brands sign on, and investors like a story that doesn't depend on duty-free parcels. Shein's own U.S. shop drifts along. But nothing about how the clothes get made has changed. The same factories, the same piece rates and the same test-and-reorder churn now run under other brands' labels too.",
+         later:"Becoming the platform gave investors a new story and spread the same costs across more brands' products.",
+         voices:{mei:"New labels on the bags, same piece rate. We don't know whose clothes they are, only how many.",
+                 ana:"So now other brands can chase trends as fast as Shein does. That's not a fix. It's a franchise.",
+                 jordan:"I didn't notice anything. Shein's the same to me.",
+                 priya:"The first plan I've heard that doesn't depend on a loophole. Show me the client list growing."}},
+        {id:"C", name:"Make the purpose real and charge for it", desc:"Pay suppliers enough for legal hours and verify it, cut new styles sharply, license designs instead of copying them, and raise prices to cover it.",
+         fx:{sales:-10, price:-14, investors:-8, labor:-14, env:-10, community:-10, consumer:-8}, key:"labor",
+         story:"Prices rise again, by about a quarter on most items. Shein names the factories that meet the new terms and counts hours in every audit. New styles drop from thousands a day to hundreds. U.S. sales fall further, and some shoppers move to cheaper apps. The ones who stay buy fewer, better-made pieces, and for the first time Shein's purpose line has evidence behind it.",
+         later:"Making the purpose real cut the costs Shein pushed onto others, and showed how much of the old price depended on them.",
+         voices:{mei:"If the hours are really counted, I'd see my family on Sundays. I'll believe it when the first month's pay comes.",
+                 ana:"A license fee and my name on it. That's what I asked for from the start.",
+                 jordan:"A $9 top is now $12. I can still afford some of it. Just less.",
+                 priya:"You just cut the advantage we bought into. I need to hear what Shein is worth at this price."}},
+        {id:"D", name:"Move the factories", desc:"Shein's actual response so far: more U.S. warehouses, new suppliers in Turkey and Brazil, faster delivery and fewer duty-exposed parcels.",
+         fx:{sales:5, price:2, investors:4, labor:0, env:0, community:-3, consumer:0}, key:"moved",
+         moved:[["labor","to new suppliers in Turkey and Brazil"],["env","to new freight routes and warehouses"]],
+         story:"Bulk shipments into new U.S. warehouses mean Shein pays duty on commercial cargo, like its competitors do, and delivery gets faster. Production starts shifting to suppliers in Turkey and Brazil. Sales recover somewhat, and investors call it pragmatic. But no one has asked what the new factories' piece rates and hours look like. The model moved; nothing in it changed.",
+         later:"Moving the factories changed where the costs land, not whether Shein pays them.",
+         voices:{mei:"If the orders go to Turkey, my factory gets fewer. That's not better for me either.",
+                 ana:"Same copying, shorter shipping.",
+                 jordan:"Faster delivery? I'm in.",
+                 priya:"Sensible. Spreading production beyond one country's duties is basic risk management."}}
+      ],
+      asks:{
+        mei:[["How are you paid?","By the piece. No base salary. When the order is big and the deadline is short, the day is long. Some months I get one day off."],
+             ["What happens when Shein squeezes your factory's price?","The owner doesn't take less. We do. Either the piece rate drops or the hours go up."],
+             ["Would you want Shein to leave?","No. Shein's orders are steady work. I want the work, and I want the hours to be legal."]],
+        ana:[["What did the copy cost you?","My set takes about three hours to make and sells for around $85. The copy sold for $8. My sales dropped that month, and the listing came down only after I posted about it."],
+             ["Is anything in Shein's model good for designers?","The testing is clever. If Shein licensed designs instead of scraping them, I'd be the first to sign."],
+             ["What would change things for you?","Credit, a license fee, and a way to report a copy that someone actually answers."]],
+        jordan:[["Why do you shop at Shein?","Price, and there's always something new. I work part-time. I can get five tops for what one costs at the mall."],
+                ["Did the price increase change what you buy?","I buy less per order and wait for coupons. I haven't stopped."],
+                ["Do you think about who made it?","Sometimes, after I watch a video about it. Then I need something for Friday."]],
+        priya:[["What did you buy into at the IPO?","A company that grew on low prices and speed, at about a quarter of its 2022 value. The discount was the point. I need a reason it's worth more."],
+               ["What worries you most?","That the low price was never the technology. If it was duty-free parcels and cheap hours, the moat is gone."],
+               ["What would win you back?","A plan where growth doesn't depend on a cost someone else is paying. Those don't last."]]
+      }
+    },
+    {
+      id:"d2", label:"Decision 2 · The shock", shock:true, noRisk:true,
+      title:"The audit question.",
+      guideRef:"Wednesday's “Since the film” slide: which changes hit Shein's economics, and which only its PR?",
+      fit:"Does this choice change Shein's economics, or only its PR? Explain.",
+      from:"Investor relations · three weeks before Shein's first earnings call as a public company",
+      memo:"A labor-rights group has released a follow-up investigation: workers at two Shein suppliers say 70-plus-hour weeks are still normal, and Shein's audits still don't count hours. Shein's first earnings call is in three weeks, and analysts have already sent questions. Europe's €3 per-item duty, in force since July, is squeezing margins there too. The board needs a response it can announce.",
+      dynamic:{
+        A:"Your supplier squeeze is in its second month. One of the two flagged factories is a long-time Guangzhou supplier that accepted your lower piece price.",
+        B:"Xcelerator signed its first two U.S. brands last month. One of the two flagged factories sews for Shein and for an Xcelerator client.",
+        C:"Your price increase and style cut took effect last month. One of the two flagged factories hadn't moved to the new verified-hours terms yet.",
+        D:"Your first Turkey supplier came online two months ago. It is one of the two flagged factories."
+      },
+      facts:[
+        {t:"In December 2022, after the film, Shein said both factories broke local working-hour limits, cut their orders, and pledged $15 million for supplier factories.", real:true},
+        {t:"In 2024, Public Eye still found 75-hour weeks standard in Guangzhou suppliers. The audits Shein commissioned left working hours out of scope.", real:true},
+        {t:"Shein's 2024 Sustainability Report says 71% of audited suppliers were graded C or lower.", real:true},
+        {t:"France fined Shein €40 million in July 2025 over fake discounts and misleading environmental claims.", real:true},
+        {t:"The new investigation interviewed workers at two suppliers. Most reported 70-plus-hour weeks during peak orders.", real:false},
+        {t:"Analysts' first two questions for the call: margins after the duties, and “what has changed since 2022?”", real:false},
+        {t:"DYNAMIC", real:false}
+      ],
+      options:[
+        {id:"A", name:"Commission a bigger audit", desc:"Hire a second audit firm, publish a new impact report with more suppliers graded, and announce a review of the two factories.",
+         fx:{sales:0, price:0, investors:5, labor:0, env:0, community:0, consumer:2}, key:"none",
+         story:"The new report is longer and better designed than the last one. Analysts mention it on the call and move on to margins. The two factories are “under review.” The audit scope is the same as before, so hours still aren't counted, and nothing changes in the factories.",
+         later:"The bigger audit changed what Shein could say, not what happened in the factories.",
+         voices:{mei:"Auditors came last year too. The manager told us what to say about overtime.",
+                 dana:"If the audit still doesn't count hours, it will find what the last one found: nothing about hours.",
+                 jordan:"I'll be honest: I've never read a sustainability report.",
+                 priya:"Good enough for this call. If the next investigation finds the same thing, it won't be good enough for the one after."}},
+        {id:"B", name:"Pay for the hours", desc:"Count hours in every audit, cap them at the legal limit, raise piece rates so workers earn the same in fewer hours, and pass the cost into prices.",
+         fx:{sales:-6, price:-8, investors:-5, labor:-14, env:0, community:0, consumer:0}, key:"labor",
+         story:"Shein rewrites its supplier contracts: hours counted, capped and checked, with higher piece rates to make up the pay. Unit costs rise, and so do prices. On the call, Shein can answer “what has changed since 2022?” with numbers for the first time. Analysts are split: a real fix, at a real cost.",
+         later:"Paying for the hours took a labor cost back from the workers and put it into the price.",
+         voices:{mei:"Same pay, fewer hours. If that's real, it's the first thing that's changed since I started.",
+                 dana:"Counting hours is the right fix, and it can be checked. We'll be back next year to see if it held.",
+                 jordan:"Prices went up again? I guess I'll buy less.",
+                 priya:"Margin down, risk down. I can explain that to my fund, if the growth story holds."}},
+        {id:"C", name:"Slow the machine", desc:"Cap new styles per day, give suppliers longer lead times, and stop paying rush premiums for overnight reorders.",
+         fx:{sales:-5, price:-4, investors:-6, labor:-6, env:-10, community:-5, consumer:-4}, key:"env",
+         story:"Shein cuts daily new styles by more than half and gives suppliers weeks, not days. Rush orders stop, so overnight ramp-ups stop too. Fewer drops means fewer copies and less urgency in the app. U.S. sales dip, because novelty was part of why people opened it. Analysts ask whether Shein still knows what it is.",
+         later:"Slowing the machine went after volume, the cost behind the LATR paradox, and gave up some of the novelty that sold.",
+         voices:{mei:"Longer lead times mean no more overnight rush. The days are still long, just not as long.",
+                 dana:"Slower orders help. But without counting hours, no one can prove it.",
+                 jordan:"The app feels slower. Fewer new things every day.",
+                 priya:"You're shrinking the engine I paid for. Tell me what replaces it."}},
+        {id:"D", name:"Cut the suppliers", desc:"Drop the two factories, announce zero tolerance for violations, and move their orders to other suppliers.",
+         fx:{sales:-1, price:0, investors:3, labor:0, env:0, community:0, consumer:0}, key:"moved",
+         moved:[["labor","to the next factories on the same terms, and to the workers who lost the orders"]],
+         story:"Shein drops both factories within a week and announces zero tolerance. The headline is strong, and the call goes smoothly. The orders go to other suppliers on the same terms, with the same deadlines and the same audits. Several hundred workers at the two factories lose most of their work.",
+         later:"Cutting the suppliers repeated Shein's 2022 response: the orders moved and the terms stayed.",
+         voices:{mei:"They didn't fix our factory. They left it. Now there's no work at all.",
+                 dana:"This is what happened in 2022. Dropping a factory punishes its workers and keeps the terms that caused the problem.",
+                 jordan:"Zero tolerance sounds good. I wouldn't know the difference.",
+                 priya:"Clean headline. If the next investigation finds the same thing somewhere else, we're right back here."}}
+      ],
+      asks:{
+        dana:[["Why didn't Shein's audits catch this?","Because they didn't measure it. An audit only holds a company to what it counts, and these didn't count hours."],
+              ["What would a real fix look like?","Counted hours, a cap at the legal limit, and piece rates high enough that workers earn the same in fewer hours. Then let someone outside check."],
+              ["Isn't dropping the factories the responsible move?","It looks responsible. But the workers lose the work, and the same terms move to the next factory."]],
+        mei:[["What happens when auditors visit?","The managers know they're coming. We're told what to say about overtime."],
+             ["What would you want Shein to announce?","That they'll pay for the time the work actually takes. The deadline is the problem, not the factory."]],
+        priya:[["What do analysts want to hear on the call?","Margins after the duties, and an answer to “what has changed since 2022?” They've read the reports. They want something different."],
+               ["Would a price increase scare investors?","Some. A plan that raises prices and lowers risk is easier to defend than one that hides the risk until the next investigation."]],
+        jordan:[["Do labor reports change what you buy?","For a day or two. If prices went up and I knew why, I might accept it. Maybe."],
+                ["What would make you trust Shein more?","Seeing the change, not reading about it. I don't read reports."]]
+      },
+      combos:[
+        {when:{d1:"A", d2:"A"}, fx:{consumer:3, investors:-4}, note:"You defended the lowest price by squeezing suppliers, then audited without counting hours. When the next report lands, Shein's own report and the investigation will say different things, and your price strategy is the reason why."},
+        {when:{d1:"A", d2:"B"}, fx:{labor:4, investors:-3}, note:"Squeezing piece prices in Decision 1 and paying for legal hours in Decision 2 pull against each other. Suppliers say the numbers don't work, so part of the fix doesn't hold."},
+        {when:{d1:"A", d2:"C"}, fx:{sales:-4}, note:"You defended the low price, then slowed the machine that made it possible. You gave up the volume without winning back the price."},
+        {when:{d1:"B", d2:"A"}, fx:{investors:-2, consumer:2}, moved:[["labor","to Xcelerator's client brands, which inherit the same audit design"]], note:"A new growth story and a new report, and nothing changed in the factories. Xcelerator's client brands now share Shein's audit gap, so the next investigation will name them too."},
+        {when:{d1:"B", d2:"B"}, fx:{}, moved:[["labor","to Xcelerator clients' orders, which the new terms don't cover"]], note:"Hours are now counted at Shein's own suppliers, but orders for Xcelerator's client brands aren't covered. The fix stops at Shein's label."},
+        {when:{d1:"B", d2:"C"}, fx:{env:6}, moved:[["env","to Xcelerator clients' churn, which the style cap doesn't touch"]], note:"You slowed Shein's own machine while selling the same machine to other brands. Total production moved; it didn't fall."},
+        {when:{d1:"C", d2:"B"}, fx:{investors:4, consumer:-3}, note:"Two decisions pointing the same way. Shein's purpose claim now has evidence behind it, and analysts can see a plan instead of a promise."},
+        {when:{d1:"C", d2:"C"}, fx:{sales:-3, env:-3}, note:"You went further than any competitor: fewer styles, verified hours, higher prices. The costs fell, and so did the volume."},
+        {when:{d1:"C", d2:"D"}, fx:{labor:3, investors:-2}, note:"You promised verified hours, then dropped the factory that got caught instead of fixing it. Workers and researchers notice the gap between the promise and the response."},
+        {when:{d1:"D", d2:"A"}, fx:{consumer:2}, note:"New factories, same audit design. The costs moved, and the audits that miss them moved too."},
+        {when:{d1:"D", d2:"B"}, fx:{labor:-6, investors:2}, note:"Counting hours from day one at the new Turkey and Brazil suppliers turns the move into a reset, not just a relocation."},
+        {when:{d1:"D", d2:"D"}, fx:{labor:3}, moved:[["labor","a second time, to whichever supplier takes the dropped orders"]], note:"You moved the factories, then dropped the one that got caught. The cost moved twice, and the workers left behind lost the orders."}
+      ]
+    }
+  ],
+
+  /* ---------- Face the room ---------- */
+  roomStep: {
+    title:"Face the room",
+    from:"The board meeting · one week after the earnings call",
+    memo:"Your U.S. plan will be read aloud to four people: a garment worker paid by the piece, an independent designer whose work was copied, a 19-year-old customer on a tight budget who loves Shein, and an investor who bought at the IPO. Build the plan on what actually happened in your two decisions, including what went wrong.",
+    rec:"Your recommendation. Lead with what Shein competes on now. Then say which costs your plan stops pushing onto others, which it keeps, and which it only moves.",
+    sentences:{mei:"One sentence to the garment worker", ana:"One sentence to the designer", jordan:"One sentence to the customer", priya:"One sentence to the investor"},
+    sentenceHint:"What does your plan mean for them? If you couldn't say it to their face, rethink the plan.",
+    challenges:[
+      {test:"claim1", who:"dana", q:"You called Shein's plan sustainable. Shein's own case is that matching supply to demand makes it sustainable. By what measure is your plan sustainable, and what does that measure leave out?"},
+      {test:"claim2", who:"jordan", q:"You talk about making fashion accessible. I'm the person it's accessible to. Under your plan, accessible to whom, and who pays for that access?"},
+      {test:"moved", who:"dana", q:"Your decisions moved some costs instead of removing them. Where did they go, and who carries them now?"},
+      {test:"badnews", who:"priya", q:"Every sentence you wrote sounds like good news. Who gives something up under your plan, and how much?"},
+      {test:"tech", who:"priya", q:"You haven't named the real advantage. What does Shein's technology do that would still be worth paying for if Shein paid all its own costs?"},
+      {test:"price", who:"jordan", q:"You didn't say what happens to what I pay. If my $10 top becomes $13, tell me straight, and tell me why it's worth it."},
+      {test:"growth", who:"priya", q:"What does Shein grow on now that the duty-free advantage is gone? Give me one number you'd watch."},
+      {test:"fallback", who:"dana", q:"Six months from now, what will I find in the factories if your plan worked, and what will I find if it didn't?"}
+    ],
+    words:{
+      claim1:["sustainab"],
+      claim2:["accessib","democrati"],
+      moved:["mov","turkey","brazil","other brand","xcelerator","client","shift","relocat","next factor","elsewhere"],
+      badnews:["less","lose","loss","fewer","higher","more expensive","give up","cost you","cut","fall","harder","pay more","raise","rais","smaller","slower","sacrific","trade-off","tradeoff"],
+      tech:["technolog","test","reorder","latr","platform","data","on-demand","on demand","demand","algorithm","small batch","micro"],
+      price:["price","$","cost","afford","pay","budget","cheap","spend"],
+      growth:["margin","growth","grow","profit","return","revenue","value","risk","worth"]
+    }
+  },
+
+  reflect: [
+    "Look back at your two decisions. Which one changed Shein's economics, and which one only changed its PR? Use what happened on the scoreboard as evidence.",
+    "Shein says its technology democratizes fashion, and the 19-year-old in the room is who that serves. After running Shein yourself, is that a purpose, a pitch, or both? Would anything in your plan change what you buy, or what people your age buy?"
+  ],
+
+  debrief: {
+    tension:"Affordability is a real purpose for a real customer, and Shein's technology creates real value. The question is whether Shein's advantage survives paying its own costs. That is the course question one last time: can purpose be a sustainable competitive advantage? When one externalized cost was removed (duty-free parcels), U.S. sales fell. Your scoreboard shows what happens as the others come back in.",
+    strong:["A clear path, stated first: what Shein competes on now","An honest account of the technology, separated from what the duty-free loophole and low piece rates were doing","The de minimis change used as evidence: remove one externalized cost and sales fall, so what happens when the others go?","One honest sentence for each person in the room, including who gives something up"],
+    weak:["“Shut it down” or “be more ethical” with no strategy behind it","Treating the technology as a myth","Moving production to Turkey or Brazil, or dropping a factory, presented as a fix without asking whether the costs moved with it","Giving everyone in the room only good news"]
+  },
+
+  sources:[
+    ["Channel 4: Untold: Inside the Shein Machine (2022)","https://www.youtube.com/watch?v=qpClEvsjW0s"],
+    ["HBS Working Knowledge: How Shein and Temu conquered fast fashion","https://www.library.hbs.edu/working-knowledge/how-shein-and-temu-conquered-fast-fashion-and-forged-a-new-business-model"],
+    ["Public Eye: Interviews with factory employees refute Shein's promises (2024)","https://www.publiceye.ch/en/topics/fashion/interviews-with-factory-employees-refute-sheins-promises-to-make-improvements"],
+    ["Yale Climate Connections: Shein is officially the biggest polluter in fast fashion","https://yaleclimateconnections.org/2024/09/shein-is-officially-the-biggest-polluter-in-fast-fashion-ai-is-making-things-worse/"],
+    ["Shein Group: Our Impact","https://www.sheingroup.com/our-impact/"]
+  ]
+};
+
+/* =========================================================
+   ENGINE: individual mode, Externalized Costs scoreboard.
+   Runs entirely in the page. No AI calls; every response is in CASE.
+   ========================================================= */
+const PHASES = [
+  {key:"setup",   label:"Start",            min:1},
+  {key:"brief",   label:"What you missed",  min:10},
+  {key:"d1",      label:"Decision 1",       min:7},
+  {key:"r1",      label:"Results",          min:3},
+  {key:"d2",      label:"The shock",        min:5},
+  {key:"r2",      label:"Results",          min:3},
+  {key:"room",    label:"Face the room",    min:7},
+  {key:"reflect", label:"Reflection",       min:4},
+  {key:"log",     label:"Submit",           min:0}
+];
+const STORE_KEY = "mktg44303-sim-" + CASE.id + "-v1";
+const MIN = {name:2, claim:80, why:40, test:50, rec:120, sent:25, reply:40, reflect:60};
+const totalMin = PHASES.reduce((t,p)=>t+p.min,0);
+const PREDICT = [...CASE.costs.map(c=>({id:c.id, name:c.name})),
+  {id:"moved", name:"It moves costs somewhere else more than it reduces them"},
+  {id:"none", name:"It barely changes any of them"}];
+
+const $ = (s, r=document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const len = s => (s||"").trim().length;
+const P = id => CASE.personas[id];
+const opt = (d, id) => CASE.decisions[d].options.find(o=>o.id===id);
+const metricName = id => (CASE.costs.find(c=>c.id===id) || CASE.biz.find(b=>b.id===id) || {}).name || id;
+const predictName = id => (PREDICT.find(p=>p.id===id)||{}).name || "";
+
+function fresh(){
+  const dec = () => ({choice:null, predict:"", fit:"", pays:"", risk:"", locked:false, asked:[]});
+  return {v:1, phase:0, name:"", section:"", startTs:null, activeMs:0, finishedAt:null,
+    check:{}, claims:{c1:"", c2:""},
+    d1:dec(), d2:dec(), t1:"", t2:"",
+    room:{rec:"", mei:"", ana:"", jordan:"", priya:"", ch:null, reply:"", done:false},
+    ref:{q1:"", q2:""}};
+}
+function load(){ try{ const t = localStorage.getItem(STORE_KEY); return t ? JSON.parse(t) : null; }catch(e){ return null; } }
+let S = (()=>{ const f = fresh(), l = load(); if(!l || l.v !== 1) return f;
+  for(const k in f){ if(l[k] !== undefined){ f[k] = (f[k] && typeof f[k]==="object" && !Array.isArray(f[k]) && l[k] && typeof l[k]==="object") ? Object.assign(f[k], l[k]) : l[k]; } }
+  return f; })();
+let saveT = null;
+function save(){ clearTimeout(saveT); saveT = setTimeout(()=>{ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch(e){} }, 250); }
+const phaseKey = () => PHASES[Math.min(S.phase, PHASES.length-1)].key;
+const idxOf = key => PHASES.findIndex(p=>p.key===key);
+function goKey(key){ S.phase = idxOf(key); if(key==="log" && !S.finishedAt) S.finishedAt = Date.now(); save(); render(); window.scrollTo(0,0); const h = $("#main h2"); if(h){ h.setAttribute("tabindex","-1"); h.focus({preventScroll:true}); } }
+
+/* ---------- scoring ---------- */
+function compute(){
+  const cur = {...CASE.baseline}, moved = [], combos = [];
+  const add = fx => { for(const k in fx){ cur[k] = (cur[k]||0) + fx[k]; } };
+  const mv = (list, when) => (list||[]).forEach(m => moved.push({cat:m[0], where:m[1], when}));
+  const snaps = [{...cur}];
+  if(S.d1.locked){ const o = opt(0, S.d1.choice); add(o.fx); mv(o.moved, "Decision 1"); }
+  snaps.push({...cur});
+  if(S.d2.locked){
+    const o = opt(1, S.d2.choice); add(o.fx); mv(o.moved, "Decision 2");
+    (CASE.decisions[1].combos||[]).forEach(c => { if(c.when.d1===S.d1.choice && c.when.d2===S.d2.choice){ add(c.fx); mv(c.moved, "Combined effect"); combos.push(c); } });
+  }
+  snaps.push({...cur});
+  snaps.forEach(sn => { for(const k in sn) sn[k] = Math.max(0, Math.min(100, sn[k])); });
+  return {base:snaps[0], a1:snaps[1], a2:snaps[2], cur:snaps[S.d2.locked?2:(S.d1.locked?1:0)], combos, moved};
+}
+const isCost = id => CASE.costs.some(c=>c.id===id);
+function deltaBadge(id, d){
+  if(!d) return `<span class="d zero">0</span>`;
+  const good = isCost(id) ? d < 0 : d > 0;
+  return `<span class="d ${good?"good":"bad"}">${d>0?"+":"−"}${Math.abs(d)}</span>`;
+}
+
+/* ---------- side panel ---------- */
+function renderSide(){
+  const c = compute();
+  let prev = null, note = "Starting point";
+  if(S.d2.locked){ prev = c.a1; note = "After Decision 2"; } else if(S.d1.locked){ prev = c.base; note = "After Decision 1"; }
+  const movedCats = new Set(c.moved.map(m=>m.cat));
+  const row = (m, isC) => {
+    const v = c.cur[m.id], d = prev ? v - prev[m.id] : 0;
+    return `<div class="mrow"><div class="lab"><span><b>${esc(m.name)}</b>${isC?` <span class="hint">${esc(m.who)}</span>`:""}${isC && movedCats.has(m.id)?` <span class="flag" title="Some of this cost was moved, not removed">⇄ moved</span>`:""}</span><span class="v">${v} ${prev?deltaBadge(m.id,d):""}</span></div>
+      <div class="track" role="img" aria-label="${esc(m.name)}: ${v} of 100"><div class="fill ${isC?"cost":"biz"}" style="width:${v}%"></div></div></div>`;
+  };
+  $("#sideCard").innerHTML = `
+    <div class="row sb"><h3>Who pays?</h3><span class="pill">${note}</span></div>
+    <p class="hint" style="margin:2px 0 10px">Costs Shein pushes onto others. Higher means more is pushed onto them.</p>
+    <div class="mrows">${CASE.costs.map(m=>row(m,true)).join("")}</div>
+    <h3 class="subh">Shein's business</h3>
+    <div class="mrows">${CASE.biz.map(m=>row(m,false)).join("")}</div>
+    ${c.moved.length?`<div class="movedbox"><b>⇄ Moved, not removed</b><ul>${c.moved.map(m=>`<li><b>${esc(metricName(m.cat))}:</b> ${esc(m.where)}</li>`).join("")}</ul></div>`:""}
+    <p class="testline">The test: remove the externalization. Does the advantage survive?</p>
+    <p class="attrib">Scores are simulation values, not company data. Framework: Externalized Costs Analysis (MKTG 44303).</p>`;
+}
+
+/* ---------- chrome ---------- */
+function fmt(ms){ const s = Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0"); }
+let lastSave = 0;
+setInterval(()=>{
+  if(S.startTs && !S.finishedAt && document.visibilityState === "visible"){ S.activeMs += 1000; if(Date.now()-lastSave > 5000){ lastSave = Date.now(); save(); } }
+  $("#clock").textContent = fmt(S.activeMs);
+}, 1000);
+function renderSteps(){
+  $("#steps").innerHTML = PHASES.map((p,i)=>`<div class="step ${i<S.phase?"done":""} ${i===S.phase?"now":""}" ${i===S.phase?'aria-current="step"':""}><b>${String(i+1).padStart(2,"0")}${p.min?` · ${p.min} min`:""}</b>${p.label}</div>`).join("");
+  $("#nameLabel").textContent = S.name ? S.name : "Not started";
+  $("#clock").textContent = fmt(S.activeMs);
+}
+
+/* ---------- form helpers ---------- */
+function getPath(p){ return p.split(".").reduce((o,k)=>o==null?o:o[k], S); }
+function setPath(p, v){ const ks = p.split("."), last = ks.pop(); const o = ks.reduce((o,k)=>o[k], S); o[last] = v; }
+function field(path, label, hint, min, rows){
+  const value = getPath(path) || "", n = len(value), id = "f-" + path.replace(/\./g,"-");
+  return `<div><label for="${id}">${label}${hint?` <span class="hint">${hint}</span>`:""}</label>
+    <textarea id="${id}" data-bind="${path}" data-min="${min}" rows="${rows||3}">${esc(value)}</textarea>
+    <div class="count ${n>=min?"ok":""}" data-count="${path}">${n>=min?"✓":`${n} / ${min} characters`}</div></div>`;
+}
+function line(path, label, hint, min){
+  const value = getPath(path) || "", n = len(value), id = "f-" + path.replace(/\./g,"-");
+  return `<div><label for="${id}">${label}${hint?` <span class="hint">${hint}</span>`:""}</label>
+    <input type="text" id="${id}" data-bind="${path}" data-min="${min}" value="${esc(value)}">
+    ${min?`<div class="count ${n>=min?"ok":""}" data-count="${path}">${n>=min?"✓":`${n} / ${min} characters`}</div>`:""}</div>`;
+}
+const voice = (id, text) => `<div class="voice"><div class="who">${esc(P(id).name)}</div><div class="role">${esc(P(id).role)}</div><p>“${esc(text)}”</p></div>`;
+
+/* ---------- gates ---------- */
+const decK = i => i===0 ? "d1" : "d2";
+const GATES = {
+  setup: ()=> len(S.name) >= MIN.name ? "" : "Add your name to start.",
+  brief: ()=> {
+    const miss = [];
+    if(Object.keys(S.check).length < CASE.check.length) miss.push("answer all four check questions");
+    if(CASE.brief.claims.items.some(c=>len(S.claims[c.id]) < MIN.claim)) miss.push("test both of Shein's claims");
+    return miss.length ? "To continue, " + miss.join(" and ") + "." : "";
+  },
+  d1: ()=> decGate(0), d2: ()=> decGate(1),
+  r1: ()=> len(S.t1) >= MIN.test ? "" : "Run the test before you move on.",
+  r2: ()=> len(S.t2) >= MIN.test ? "" : "Run the test before you move on.",
+  room: ()=> {
+    if(!S.room.ch){ const miss = []; if(len(S.room.rec) < MIN.rec) miss.push("your recommendation"); CASE.room.forEach(id=>{ if(len(S.room[id]) < MIN.sent) miss.push(`a sentence to ${P(id).name.split(",")[0]}`); });
+      return miss.length ? "Still needed: " + miss.join(", ") + "." : ""; }
+    return len(S.room.reply) >= MIN.reply ? "" : "Answer the question from the room to finish.";
+  },
+  reflect: ()=> (len(S.ref.q1) >= MIN.reflect && len(S.ref.q2) >= MIN.reflect) ? "" : "Answer both reflection questions.",
+  log: ()=> ""
+};
+const hasRisk = i => !CASE.decisions[i].noRisk;
+function decGate(i){
+  const st = S[decK(i)], miss = [];
+  if(st.asked.length < 2) miss.push("ask the room at least two questions");
+  if(!st.choice) miss.push("choose an option");
+  if(!st.predict) miss.push("make your prediction");
+  if(len(st.fit) < MIN.why || len(st.pays) < MIN.why || (hasRisk(i) && len(st.risk) < MIN.why)) miss.push(`answer ${hasRisk(i)?"all three":"both"} questions`);
+  return miss.length ? "To lock it in, " + miss.join(", ") + "." : "";
+}
+function refreshGates(){
+  const msg = (GATES[phaseKey()] || (()=>""))();
+  const btn = document.querySelector("[data-primary]");
+  if(btn) btn.disabled = !!msg;
+  const g = $("#gateMsg"); if(g) g.textContent = msg;
+}
+
+/* ---------- views ---------- */
+function vSetup(){
+  return `<section class="card stack">
+    <div class="eyebrow">Makeup simulation · on your own</div>
+    <h2>${esc(CASE.title)}</h2>
+    <p class="lede">This simulation stands in for the Shein classes you missed, when the class watched a documentary and worked through it together. You'll catch up on what the film showed, then step into Shein's biggest decision as its U.S. president.</p>
+    <div class="callout"><b>The big question.</b> ${esc(CASE.bigQuestion)}</div>
+    <ol class="plan">
+      <li><b>What you missed</b> (about 10 min): the film, the framework and what's happened since; then you test two of Shein's claims and take a short check</li>
+      <li><b>Two decisions</b> (about 18 min): question the people affected, choose, and see who pays</li>
+      <li><b>Face the room</b> (about 7 min): your plan, read aloud to a worker, a designer, a customer and an investor</li>
+      <li><b>Reflect</b> (about 4 min), then download your record and upload it to Blackboard</li>
+    </ol>
+    <div class="banner">Your work saves in this browser as you go. If you close the tab, you can come back on the same device and browser and pick up where you left off. Plan on about ${totalMin} minutes, plus a couple of minutes to submit.</div>
+    <div class="grid2">${line("name","Your name","",MIN.name)}${line("section","Section","(optional)",0)}</div>
+    <div class="row"><button class="btn" type="button" id="startBtn" data-primary>Start</button><span class="gate" id="gateMsg" aria-live="polite"></span></div>
+  </section>`;
+}
+function panelHTML(p){
+  return `<section class="card stack panel"><h3>${esc(p.h)}</h3>
+    ${(p.p||[]).map(x=>`<p>${esc(x)}</p>`).join("")}
+    ${p.steps?`<ol class="flywheel">${p.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`:""}
+    ${(p.after||[]).map(x=>`<p>${esc(x)}</p>`).join("")}
+    ${p.table?`<div style="overflow-x:auto"><table><thead><tr>${p.table.head.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${p.table.rows.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody></table></div>`:""}
+    ${p.list?`<ul class="since">${p.list.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+    ${p.callout?`<div class="callout">${esc(p.callout)}</div>`:""}
+  </section>`;
+}
+function vBrief(){
+  const B = CASE.brief;
+  const qs = CASE.check.map((q,i)=>{
+    const ans = S.check[i];
+    return `<div class="q"><b>${i+1}. ${esc(q.q)}</b><div class="qopts">${q.a.map((a,j)=>{
+      const cls = ans===undefined ? "" : (j===q.c ? "right" : (j===ans ? "wrong" : ""));
+      return `<button class="a ${cls}" type="button" data-q="${i}" data-a="${j}" ${ans!==undefined?"disabled":""}>${String.fromCharCode(65+j)}. ${esc(a)}</button>`; }).join("")}</div>
+      ${ans!==undefined?`<p class="why"><b>${ans===q.c?"Right.":"Not quite."}</b> ${esc(q.why)}</p>`:""}</div>`;
+  }).join("");
+  return `<section class="card stack">
+      <div class="row sb"><div class="eyebrow">Step 2 · What you missed</div><span class="target">about 12 min</span></div>
+      <h2>Monday and Wednesday, in one place</h2>
+      <p class="lede">${esc(B.intro)}</p>
+      <details class="clips"><summary>Optional: watch the key parts of the film</summary><p class="gate">${esc(B.clips.note)}</p><ul>${B.clips.links.map(([t,u])=>`<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul></details>
+    </section>
+    ${B.panels.map(panelHTML).join("")}
+    <section class="card stack">
+      <div class="eyebrow">Test Shein's two claims</div>
+      <p class="lede">${esc(B.claims.intro)}</p>
+      ${B.claims.items.map(c=>`<div class="claim stack"><div class="memo"><div class="from">${esc(c.label)} · Shein's claim</div><p>${esc(c.claim)}</p></div>
+        ${field("claims."+c.id, esc(B.claims.field), esc(c.prompts), MIN.claim, 4)}</div>`).join("")}
+    </section>
+    <section class="card stack">
+      <div class="eyebrow">Quick check</div>
+      <p class="lede">Four quick questions on the briefing. Your score goes in your record; a wrong answer shows you why.</p>
+      ${qs}
+      <div class="row"><button class="btn" type="button" id="briefNext" data-primary>Go to Decision 1</button><span class="gate" id="gateMsg" aria-live="polite"></span></div>
+    </section>`;
+}
+function vDecision(i){
+  const D = CASE.decisions[i], k = decK(i), st = S[k];
+  const dyn = D.dynamic && S.d1.choice ? D.dynamic[S.d1.choice] : "";
+  const facts = D.facts.map(f => f.t==="DYNAMIC" ? (dyn?`<li><span>${esc(dyn)} <span class="tag scen">Scenario</span></span></li>`:"") : `<li><span>${esc(f.t)} <span class="tag ${f.real?"real":"scen"}">${f.real?"Real":"Scenario"}</span></span></li>`).join("");
+  const askers = Object.keys(D.asks);
+  const asked = new Set(st.asked);
+  const askHTML = askers.map(id=>`<div class="asker"><div class="who">${esc(P(id).name)}</div><div class="role">${esc(P(id).role)}</div>
+      <div class="qlist">${D.asks[id].map((qa,n)=>{ const key = id+":"+n; return `<button class="btn ghost askq" type="button" data-ask="${key}" ${asked.has(key)?"disabled":""}>${asked.has(key)?"✓ ":""}${esc(qa[0])}</button>`; }).join("")}</div></div>`).join("");
+  const convo = st.asked.map(key=>{ const [id,n] = key.split(":"); const qa = D.asks[id][+n]; return `<div class="m us"><b>You to ${esc(P(id).name.split(",")[0])}:</b> ${esc(qa[0])}</div><div class="m them"><b>${esc(P(id).name.split(",")[0])}:</b> ${esc(qa[1])}</div>`; }).join("");
+  return `<section class="card stack">
+      <div class="row sb"><div class="eyebrow">${esc(D.label)}</div><span class="target">about ${PHASES[idxOf(k)].min} min</span></div>
+      <h2>${esc(D.title)}</h2>
+      <p class="gate">${i===0?esc(CASE.role)+" ":""}From the case: ${esc(D.guideRef)}.</p>
+      <div class="memo"><div class="from">${esc(D.from)}</div><p>${esc(D.memo)}</p></div>
+      <h3>The facts</h3>
+      <ol class="facts">${facts}</ol>
+    </section>
+    <section class="card stack">
+      <div class="eyebrow">Ask the room</div>
+      <p class="lede">Question the people this decision affects before you choose. Ask at least two; ask as many as you like.</p>
+      <div class="askers">${askHTML}</div>
+      ${convo?`<div class="chat" aria-live="polite">${convo}</div>`:""}
+    </section>
+    <section class="card stack">
+      <div class="eyebrow">Your options</div>
+      <div class="opts" role="radiogroup" aria-label="Options">${D.options.map(o=>`<button type="button" class="opt ${st.choice===o.id?"sel":""}" role="radio" aria-checked="${st.choice===o.id}" data-opt="${k}|${o.id}"><span class="k">Option ${o.id}</span><strong>${esc(o.name)}</strong><span>${esc(o.desc)}</span></button>`).join("")}</div>
+    </section>
+    <section class="card stack">
+      <div class="eyebrow">Your reasoning</div>
+      <div><label for="pred-${k}">${esc(CASE.text.predict)}</label><select id="pred-${k}" data-bind="${k}.predict"><option value="">Choose one</option>${PREDICT.map(p=>`<option value="${p.id}" ${st.predict===p.id?"selected":""}>${esc(p.name)}</option>`).join("")}</select></div>
+      ${field(k+".fit", esc(D.fit), "", MIN.why)}
+      ${field(k+".pays", esc(CASE.text.pays), "", MIN.why)}
+      ${hasRisk(i)?field(k+".risk", esc(CASE.text.risk), "", MIN.why):""}
+      <div class="row"><button class="btn" type="button" id="lockBtn" data-k="${k}" data-primary>Lock in ${st.choice?`Option ${st.choice}`:"your choice"}</button><span class="gate" id="gateMsg" aria-live="polite"></span></div>
+      <p class="gate">Once you lock in, you can't change this decision.</p>
+    </section>`;
+}
+function vResult(i){
+  const D = CASE.decisions[i], k = decK(i), st = S[k], o = opt(i, st.choice), c = compute();
+  const before = i===0 ? c.base : c.a1, after = i===0 ? c.a1 : c.a2;
+  const movedHere = c.moved.filter(m => i===0 ? m.when==="Decision 1" : m.when!=="Decision 1");
+  const movedCats = new Set(movedHere.map(m=>m.cat));
+  const right = st.predict === o.key;
+  const keyText = o.key==="moved" ? "it mostly moved costs somewhere else" : o.key==="none" ? "it barely changed any cost" : `the biggest change was in ${metricName(o.key)}`;
+  const rows = [...CASE.costs, ...CASE.biz].map((m,n)=>`${n===CASE.costs.length?`<tr class="sep"><th colspan="4">Shein's business</th></tr>`:""}<tr><td>${esc(m.name)}${movedCats.has(m.id)?` <span class="flag">⇄ moved</span>`:""}</td><td class="num">${before[m.id]}</td><td class="num">${after[m.id]}</td><td>${deltaBadge(m.id, after[m.id]-before[m.id])}</td></tr>`).join("");
+  const voices = i===0 ? CASE.room : ["mei","dana","jordan","priya"];
+  return `<section class="card stack" aria-live="polite">
+      <div class="row sb"><div class="eyebrow">Results · ${esc(D.label)}</div><span class="target">about ${PHASES[idxOf(i===0?"r1":"r2")].min} min</span></div>
+      <h2>You chose: ${esc(o.name)}</h2>
+      <p>${esc(o.story)}</p>
+      <div class="callout"><b>Check your prediction.</b> You said: “${esc(predictName(st.predict))}.” In fact, ${esc(keyText)}. ${right?"Right read.":"Look at the table: why did the effect land somewhere other than you expected?"}</div>
+      ${i===1 && c.combos.length ? c.combos.map(cb=>`<div class="callout combo"><b>Combined with Decision 1:</b> ${esc(cb.note)}</div>`).join("") : ""}
+      <h3>Who pays now</h3>
+      <div style="overflow-x:auto"><table class="chg"><thead><tr><th>Costs pushed onto others</th><th>Before</th><th>After</th><th>Change</th></tr></thead><tbody>${rows}</tbody></table></div>
+      ${movedHere.length?`<div class="movedbox"><b>⇄ Moved, not removed.</b> These costs didn't go down. They landed on someone else:<ul>${movedHere.map(m=>`<li><b>${esc(metricName(m.cat))}:</b> ${esc(m.where)}</li>`).join("")}</ul></div>`:""}
+    </section>
+    <section class="card stack">
+      <div class="eyebrow">The room reacts</div>
+      <div class="voices">${voices.map(id=>voice(id, o.voices[id])).join("")}</div>
+    </section>
+    <section class="card stack">
+      ${field(i===0?"t1":"t2", esc(CASE.text.test), "", MIN.test, 4)}
+      <div class="row"><button class="btn" type="button" id="${i===0?"toD2":"toRoom"}" data-primary>${i===0?"Go to the shock":"Face the room"}</button><span class="gate" id="gateMsg" aria-live="polite"></span></div>
+    </section>`;
+}
+function vRoom(){
+  const R = CASE.roomStep, ch = S.room.ch;
+  return `<section class="card stack">
+      <div class="row sb"><div class="eyebrow">Step 7 · ${esc(R.title)}</div><span class="target">about ${PHASES[idxOf("room")].min} min</span></div>
+      <h2>Your plan for Shein in the U.S.</h2>
+      <div class="memo"><div class="from">${esc(R.from)}</div><p>${esc(R.memo)}</p></div>
+      <p class="gate">You chose <b>${esc(opt(0,S.d1.choice).name)}</b>, then <b>${esc(opt(1,S.d2.choice).name)}</b>. Your scoreboard is on the right.</p>
+      ${field("room.rec", esc(R.rec), "", MIN.rec, 5)}
+      <p class="gate">${esc(R.sentenceHint)}</p>
+      ${CASE.room.map(id=>field("room."+id, `${esc(R.sentences[id])}: ${esc(P(id).name)}`, `<br>${esc(P(id).role)}`, MIN.sent, 2)).join("")}
+      ${ch?"":`<div class="row"><button class="btn" type="button" id="readBtn" data-primary>Read it to the room</button><span class="gate" id="gateMsg" aria-live="polite"></span></div>`}
+    </section>
+    ${ch?`<section class="card stack" aria-live="polite">
+      <div class="eyebrow">The room pushes back</div>
+      ${voice(ch.who, ch.q)}
+      ${field("room.reply", "Your answer", "Answer the question directly.", MIN.reply, 3)}
+      <div class="row"><button class="btn" type="button" id="roomDone" data-primary>Go to reflection</button><span class="gate" id="gateMsg" aria-live="polite"></span></div>
+    </section>`:""}`;
+}
+function pickChallenge(){
+  const R = CASE.roomStep, W = R.words, lc = s => (s||"").toLowerCase();
+  const has = (txt, list) => list.some(w => lc(txt).includes(w));
+  const all = [S.room.rec, S.room.mei, S.room.ana, S.room.jordan, S.room.priya, S.t1, S.t2].join(" ");
+  const plan = [S.room.rec, S.room.mei, S.room.ana, S.room.jordan, S.room.priya].join(" ");
+  const sentences = [S.room.mei, S.room.ana, S.room.jordan, S.room.priya].join(" ");
+  const c = compute();
+  const tests = {
+    claim1: ()=> has(plan, W.claim1),
+    claim2: ()=> has(plan, W.claim2),
+    moved: ()=> c.moved.length > 0 && !has(plan, W.moved),
+    badnews: ()=> !has(sentences, W.badnews),
+    tech: ()=> !has(all, W.tech),
+    price: ()=> !has(S.room.rec + " " + S.room.jordan, W.price),
+    growth: ()=> !has(S.room.rec + " " + S.room.priya, W.growth),
+    fallback: ()=> true
+  };
+  const pick = R.challenges.find(x => tests[x.test]());
+  return {who:pick.who, q:pick.q, test:pick.test};
+}
+function vReflect(){
+  return `<section class="card stack">
+      <div class="row sb"><div class="eyebrow">Step 8 · Reflection</div><span class="target">about ${PHASES[idxOf("reflect")].min} min</span></div>
+      <h2>Two questions, on your own</h2>
+      ${CASE.reflect.map((q,n)=>field("ref.q"+(n+1), `${n+1}. ${esc(q)}`, "", MIN.reflect, 4)).join("")}
+      <div class="row"><button class="btn" type="button" id="toLog" data-primary>Finish and get my record</button><span class="gate" id="gateMsg" aria-live="polite"></span></div>
+    </section>`;
+}
+function vLog(){
+  const D = CASE.debrief;
+  return `<section class="card stack">
+      <div class="eyebrow">Step 9 · Submit</div>
+      <h2>Upload your record to Blackboard</h2>
+      ${canDownload()
+        ? `<p class="lede">Download your record and upload it to this week's Blackboard assignment. If a download doesn't work, copy the text and paste it into the assignment instead.</p>
+      <div class="row"><button class="btn" type="button" id="dlPdf">Download PDF</button><button class="btn ghost" type="button" id="dlDocx">Download Word</button><button class="btn ghost" type="button" id="copyLog">Copy as text</button></div>`
+        : `<p class="lede">Copy your record and paste it into this week's Blackboard assignment (into the text box, or into a Word document you upload).${DL.ready?"":" Checking whether downloads are available here…"}</p>
+      <div class="row"><button class="btn" type="button" id="copyLog">Copy as text</button></div>`}
+      <p class="gate" id="copyMsg" aria-live="polite"></p>
+      <pre class="log" id="logText">${esc(logText())}</pre>
+    </section>
+    <section class="card stack">
+      <div class="eyebrow">Debrief</div>
+      <h3>The tension this week</h3>
+      <p>${esc(D.tension)}</p>
+      <div class="voices">
+        <div class="voice"><div class="who">Strong plans</div><ul>${D.strong.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+        <div class="voice"><div class="who">Weak plans</div><ul>${D.weak.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+      </div>
+      <p class="gate">Compare your plan with both lists before you upload. You can't edit it now, but you can say in class what you'd change.</p>
+    </section>`;
+}
+
+/* ---------- record ---------- */
+function checkScore(){ return CASE.check.reduce((t,q,i)=>t + (S.check[i]===q.c?1:0), 0); }
+function scoreLine(snap){ return [...CASE.costs, ...CASE.biz].map(m=>`${m.name} ${snap[m.id]}`).join(" · "); }
+function docModel(){
+  const c = compute(), secs = [];
+  const when = S.finishedAt ? new Date(S.finishedAt) : new Date();
+  secs.push({h:"Student", rows:[["Name", S.name], ["Section", S.section || "-"], ["Completed", when.toLocaleString()], ["Time on task", fmt(S.activeMs) + " (minutes:seconds of active time before submitting)"], ["Briefing check", `${checkScore()} of ${CASE.check.length} correct`]]});
+  secs.push({h:"Shein's two claims", rows: CASE.brief.claims.items.map(c=>[`${c.label}: ${c.claim}`, S.claims[c.id]])});
+  [0,1].forEach(i=>{
+    const D = CASE.decisions[i], k = decK(i), st = S[k]; if(!st.locked) return;
+    const o = opt(i, st.choice), snap = i===0 ? c.a1 : c.a2;
+    const rows = [["Choice", `Option ${o.id}: ${o.name}`], ["Prediction", `${predictName(st.predict)} (actual: ${o.key==="moved"?"mostly moved costs":o.key==="none"?"barely changed any cost":metricName(o.key)})`],
+      [D.fit, st.fit], [CASE.text.pays, st.pays], ...(hasRisk(i)?[[CASE.text.risk, st.risk]]:[]),
+      ["Questions asked", st.asked.map(key=>{ const [id,n] = key.split(":"); return `${P(id).name}: ${D.asks[id][+n][0]}`; }).join("\n")],
+      ["What happened", o.later]];
+    if(i===1) c.combos.forEach(cb=>rows.push(["Combined effect", cb.note]));
+    rows.push(["Scoreboard after", scoreLine(snap)], [CASE.text.test, i===0 ? S.t1 : S.t2]);
+    secs.push({h:`${D.label}: ${D.title}`, rows});
+  });
+  if(S.room.ch || len(S.room.rec)){
+    const rows = [["Recommendation", S.room.rec], ...CASE.room.map(id=>[`To ${P(id).name}`, S.room[id]])];
+    if(S.room.ch){ rows.push([`The room pushed back (${P(S.room.ch.who).name})`, S.room.ch.q], ["Reply", S.room.reply]); }
+    secs.push({h:"Face the room", rows});
+  }
+  secs.push({h:"Reflection", rows: CASE.reflect.map((q,n)=>[q, S.ref["q"+(n+1)]])});
+  secs.push({h:"Final scoreboard", rows:[["Start", scoreLine(c.base)], ["End", scoreLine(c.cur)], ["Moved, not removed", c.moved.length ? c.moved.map(m=>`${metricName(m.cat)}: ${m.where}`).join("\n") : "None"]]});
+  return {sub:"MKTG 44303 | Shein makeup simulation", title:CASE.title, sections:secs};
+}
+function logText(){
+  const m = docModel();
+  return `${m.sub}\n${m.title}\n` + m.sections.map(s=>`\n== ${s.h.toUpperCase()} ==\n` + s.rows.map(([k,v])=>`${k}\n${v||"-"}\n`).join("\n")).join("");
+}
+
+/* ---------- files ---------- */
+const libs = {};
+function loadLib(url, g){
+  if(window[g]) return Promise.resolve(window[g]);
+  if(!libs[url]) libs[url] = new Promise((res, rej)=>{ const sc = document.createElement("script"); sc.src = url; sc.onload = ()=> window[g] ? res(window[g]) : rej(new Error("load")); sc.onerror = ()=>{ delete libs[url]; rej(new Error("load")); }; document.head.appendChild(sc); });
+  return libs[url];
+}
+const JSPDF = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+const DOCX = "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js";
+const pdfSafe = s => String(s||"").replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/[–—−]/g,"-").replace(/→/g,"->").replace(/·/g,"|").replace(/⇄/g,"<->").replace(/€/g,"EUR ").replace(/£/g,"GBP ").replace(/₂/g,"2").replace(/[^\x00-\xFF]/g,"");
+async function buildPDF(){
+  const lib = await loadLib(JSPDF, "jspdf");
+  const doc = new lib.jsPDF({unit:"pt", format:"letter"});
+  const M = 54, W = 612 - M*2, PHt = 792, RED = [157,34,53], INK = [30,25,26], MUTED = [98,86,89];
+  const m = docModel(); let y;
+  doc.setFillColor(...RED); doc.rect(0,0,612,78,"F");
+  doc.setTextColor(255,255,255); doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.text(pdfSafe(m.sub).toUpperCase(), M, 30);
+  doc.setFont("helvetica","bold"); doc.setFontSize(20); doc.text(pdfSafe(m.title), M, 56);
+  y = 108;
+  const need = h => { if(y + h > PHt - M){ doc.addPage(); y = M; } };
+  m.sections.forEach(sec=>{
+    need(40);
+    doc.setTextColor(...RED); doc.setFont("helvetica","bold"); doc.setFontSize(12.5);
+    const hl = doc.splitTextToSize(pdfSafe(sec.h), W); doc.text(hl, M, y); y += hl.length*16;
+    doc.setDrawColor(...RED); doc.setLineWidth(.8); doc.line(M, y-8, M+W, y-8); y += 6;
+    sec.rows.forEach(([k,v])=>{
+      const kl = doc.splitTextToSize(pdfSafe(k), W), vl = doc.splitTextToSize(pdfSafe(v||"-"), W);
+      need(kl.length*11 + Math.min(vl.length,3)*13 + 4);
+      doc.setTextColor(...MUTED); doc.setFont("helvetica","bold"); doc.setFontSize(8.5); kl.forEach(l=>{ doc.text(l, M, y); y += 11; }); y += 2;
+      doc.setTextColor(...INK); doc.setFont("helvetica","normal"); doc.setFontSize(10.5);
+      vl.forEach(l=>{ need(13); doc.text(l, M, y); y += 13.5; });
+      y += 8;
+    });
+    y += 8;
+  });
+  const n = doc.getNumberOfPages();
+  for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...MUTED); doc.text(pdfSafe(`${S.name} | page ${i} of ${n}`), M, PHt-28); }
+  return doc.output("blob");
+}
+async function buildDOCX(){
+  const d = await loadLib(DOCX, "docx");
+  const m = docModel(), kids = [];
+  kids.push(new d.Paragraph({children:[new d.TextRun({text:m.sub.toUpperCase(), color:"9D2235", bold:true, size:18})]}));
+  kids.push(new d.Paragraph({spacing:{after:240}, children:[new d.TextRun({text:m.title, bold:true, size:40, color:"1E191A"})]}));
+  m.sections.forEach(sec=>{
+    kids.push(new d.Paragraph({spacing:{before:280, after:120}, border:{bottom:{color:"9D2235", size:6, style:d.BorderStyle.SINGLE, space:2}}, children:[new d.TextRun({text:sec.h, bold:true, size:26, color:"9D2235"})]}));
+    sec.rows.forEach(([k,v])=>{
+      kids.push(new d.Paragraph({spacing:{before:120}, children:[new d.TextRun({text:String(k), bold:true, size:18, color:"625659"})]}));
+      String(v||"-").split("\n").forEach(l=> kids.push(new d.Paragraph({spacing:{after:40}, children:[new d.TextRun({text:l, size:21})]})));
+    });
+  });
+  return d.Packer.toBlob(new d.Document({styles:{default:{document:{run:{font:"Arial"}}}}, sections:[{properties:{page:{margin:{top:1080,bottom:1080,left:1080,right:1080}}}, children:kids}]}));
+}
+function fileBase(){ return `Shein_Simulation_${(S.name||"Record").replace(/[^a-z0-9]+/gi,"_").replace(/^_|_$/g,"")}`; }
+/* Downloads: inside a claude.ai artifact view, page-started downloads are blocked, so use the
+   platform's downloads capability when it is offered; as a standalone file, a normal link works.
+   When neither is available, the page offers Copy as text only. */
+const DL = {inArtifact: !!(window.claude && typeof window.claude.use === "function"), cap:null, ready:false};
+if(DL.inArtifact){
+  Promise.resolve().then(()=>window.claude.use("downloads")).then(d=>{ DL.cap = d || null; }).catch(()=>{ DL.cap = null; })
+    .finally(()=>{ DL.ready = true; if(phaseKey()==="log") render(); });
+} else { DL.ready = true; }
+const canDownload = () => DL.inArtifact ? !!DL.cap : true;
+async function saveBlob(blob, name){
+  if(DL.inArtifact){ if(!DL.cap) throw new Error("nodl"); await DL.cap.save({filename:name, data:blob}); return; }
+  const url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+async function download(kind, btn){
+  const msg = $("#copyMsg"); btn.disabled = true; msg.textContent = "Building your file…";
+  try{ await saveBlob(kind==="pdf" ? await buildPDF() : await buildDOCX(), `${fileBase()}.${kind}`); msg.textContent = "Saved. Upload the file to this week's Blackboard assignment."; }
+  catch(e){ msg.textContent = (e && e.message==="load") ? "The file builder didn't load. Use “Copy as text” and paste your record into Blackboard instead." : "That download didn't go through. Use “Copy as text” and paste your record into Blackboard instead."; }
+  finally{ btn.disabled = false; }
+}
+window.__simBuild = {buildPDF, buildDOCX, logText};
+
+/* ---------- briefing drawer ---------- */
+function openGuide(){
+  $("#drawer").innerHTML = `<div class="row sb"><h3>The briefing</h3><button class="btn ghost" type="button" id="closeGuide">Close</button></div>
+    <p class="gate" style="margin-top:6px">Everything from “What you missed,” for reference while you decide.</p>
+    ${CASE.brief.panels.map(p=>`<h4>${esc(p.h)}</h4>${(p.p||[]).map(x=>`<p>${esc(x)}</p>`).join("")}${p.steps?`<ol>${p.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`:""}${(p.after||[]).map(x=>`<p>${esc(x)}</p>`).join("")}${p.table?`<ul>${p.table.rows.map(r=>`<li><b>${esc(r[0])}</b> (${esc(r[1])}): ${esc(r[2])}</li>`).join("")}</ul>`:""}${p.list?`<ul>${p.list.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}${p.callout?`<p class="callout">${esc(p.callout)}</p>`:""}`).join("")}
+    <h4>Shein's two claims (open questions)</h4><ul>${CASE.brief.claims.items.map(c=>`<li><b>${esc(c.label)}:</b> ${esc(c.claim)}</li>`).join("")}</ul>
+    <h4>Sources</h4><ul>${CASE.sources.map(([t,u])=>`<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul>`;
+  $("#drawer").classList.add("open"); $("#scrim").classList.add("open"); $("#closeGuide").focus();
+}
+function closeGuide(){ $("#drawer").classList.remove("open"); $("#scrim").classList.remove("open"); }
+
+/* ---------- render + events ---------- */
+function render(){
+  if(S.phase >= PHASES.length) S.phase = PHASES.length - 1;
+  renderSteps(); renderSide();
+  const views = {setup:vSetup, brief:vBrief, d1:()=>vDecision(0), r1:()=>vResult(0), d2:()=>vDecision(1), r2:()=>vResult(1), room:vRoom, reflect:vReflect, log:vLog};
+  const active = document.activeElement && document.activeElement.id;
+  $("#main").innerHTML = views[phaseKey()]();
+  if(active){ const el = document.getElementById(active); if(el && (el.tagName==="TEXTAREA"||el.tagName==="INPUT"||el.tagName==="SELECT")) el.focus(); }
+  refreshGates();
+}
+document.addEventListener("input", e=>{
+  const t = e.target; if(!t.dataset || !t.dataset.bind) return;
+  setPath(t.dataset.bind, t.value); save();
+  const min = +t.dataset.min || 0, cnt = document.querySelector(`[data-count="${t.dataset.bind}"]`);
+  if(cnt){ const n = len(t.value); cnt.textContent = n>=min ? "✓" : `${n} / ${min} characters`; cnt.classList.toggle("ok", n>=min); }
+  if(t.dataset.bind==="name") $("#nameLabel").textContent = t.value || "Not started";
+  refreshGates();
+});
+document.addEventListener("change", e=>{ const t = e.target; if(t.tagName==="SELECT" && t.dataset.bind){ setPath(t.dataset.bind, t.value); save(); refreshGates(); } });
+document.addEventListener("click", e=>{
+  const t = e.target.closest("button, a"); if(!t) return;
+  if(t.id==="guideBtn"){ openGuide(); return; }
+  if(t.id==="closeGuide"){ closeGuide(); return; }
+  if(t.id==="restartLink"){ e.preventDefault(); $("#dialog").classList.add("open"); $("#dlgNo").focus(); return; }
+  if(t.id==="dlgNo"){ $("#dialog").classList.remove("open"); return; }
+  if(t.id==="dlgYes"){ S = fresh(); try{ localStorage.removeItem(STORE_KEY); }catch(_){} $("#dialog").classList.remove("open"); render(); window.scrollTo(0,0); return; }
+  if(t.disabled) return;
+  if(t.id==="startBtn"){ if(!S.startTs) S.startTs = Date.now(); goKey("brief"); return; }
+  if(t.dataset.q !== undefined && t.dataset.a !== undefined){ const i = +t.dataset.q; if(S.check[i]!==undefined) return; S.check[i] = +t.dataset.a; save(); const y = window.scrollY; render(); window.scrollTo(0,y); return; }
+  if(t.id==="briefNext"){ goKey("d1"); return; }
+  if(t.dataset.ask){ const k = phaseKey()==="d1" ? "d1" : "d2"; if(!S[k].asked.includes(t.dataset.ask)) S[k].asked.push(t.dataset.ask); save(); const y = window.scrollY; render(); window.scrollTo(0,y); return; }
+  if(t.dataset.opt){ const [k,id] = t.dataset.opt.split("|"); if(S[k].locked) return; S[k].choice = id; save(); const y = window.scrollY; render(); window.scrollTo(0,y); return; }
+  if(t.id==="lockBtn"){ const k = t.dataset.k; S[k].locked = true; goKey(k==="d1" ? "r1" : "r2"); return; }
+  if(t.id==="toD2"){ goKey("d2"); return; }
+  if(t.id==="toRoom"){ goKey("room"); return; }
+  if(t.id==="readBtn"){ S.room.ch = pickChallenge(); save(); render(); const r = $("#f-room-reply"); if(r){ r.scrollIntoView({block:"center"}); r.focus({preventScroll:true}); } return; }
+  if(t.id==="roomDone"){ S.room.done = true; goKey("reflect"); return; }
+  if(t.id==="toLog"){ goKey("log"); return; }
+  if(t.id==="dlPdf"){ download("pdf", t); return; }
+  if(t.id==="dlDocx"){ download("docx", t); return; }
+  if(t.id==="copyLog"){
+    const txt = logText();
+    const sel = ()=>{ const r = document.createRange(); r.selectNodeContents($("#logText")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("#copyMsg").textContent = "The text is selected. Press Ctrl+C (Cmd+C on a Mac) to copy it."; };
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(()=>{ $("#copyMsg").textContent = "Copied. Paste it into the Blackboard assignment."; }).catch(sel); } else sel();
+    return;
+  }
+});
+$("#scrim").addEventListener("click", closeGuide);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeGuide(); $("#dialog").classList.remove("open"); } });
+render();
+
+</script>
+</body>
+</html>
